@@ -1,0 +1,10 @@
+name: misc
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - perl=5.30.3
+  - adapterremoval=2.3.1
+  - samtools=1.13
+  - bwa=0.7.17
