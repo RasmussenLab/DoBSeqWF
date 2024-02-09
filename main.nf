@@ -31,6 +31,8 @@ log.info paramsSummaryLog(workflow)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { FASTQC                    } from './modules/fastqc'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +43,7 @@ log.info paramsSummaryLog(workflow)
 sampletable_ch = Channel
     .fromPath(params.sampletable)
     .splitCsv(sep: '\t')
-    .map { row -> tuple(row[0], row[1], row[2], row[3]) }
+    .map { row -> tuple(row[0], row[1], row[2]) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +51,7 @@ sampletable_ch = Channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-reference_genome_ch = Channel.fromPath(params.resourceBase + params.genomeVersion, checkIfExists: true)
+reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genomeVersion + ".fna", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,6 +60,14 @@ reference_genome_ch = Channel.fromPath(params.resourceBase + params.genomeVersio
 */
 
 workflow variants {
+    
+    if (params.doFastqc) {
+        FASTQC(sampletable_ch)
+    }
+
+    // Add fastp here?
+
+    
 
 }
 
