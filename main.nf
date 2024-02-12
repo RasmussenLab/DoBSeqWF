@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-// mads 2024-02-08
+// mads 2024-02-12
 
 // Yaml parser
 import org.yaml.snakeyaml.Yaml
@@ -32,7 +32,12 @@ log.info paramsSummaryLog(workflow)
 */
 
 include { FASTQC                    } from './modules/fastqc'
-
+include { ALIGNMENT                 } from './modules/alignment'
+include { MARKDUPLICATES            } from './modules/markduplicates'
+include { CLEAN                     } from './modules/clean'
+include { ADDREADGROUP              } from './modules/addreadgroup'
+include { INDEX                     } from './modules/index'
+include { VALIDATE                  } from './modules/validate'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,7 +48,7 @@ include { FASTQC                    } from './modules/fastqc'
 sampletable_ch = Channel
     .fromPath(params.sampletable)
     .splitCsv(sep: '\t')
-    .map { row -> tuple(row[0], row[1], row[2]) }
+    .map { row -> tuple(row[0], [row[1], row[2]]) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,7 +56,7 @@ sampletable_ch = Channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genomeVersion + ".fna", checkIfExists: true)
+reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genomeVersion + ".fna", checkIfExists: true).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,20 +64,37 @@ reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genome
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow variants {
+workflow mapping {
+    take:
+    sampletable
     
+    main:
     if (params.doFastqc) {
-        FASTQC(sampletable_ch)
+        FASTQC(sampletable)
     }
 
     // Add fastp here?
 
-    
+    ALIGNMENT(sampletable, reference_genome_ch)
 
+    // Add samtools stats and mosdepth
+
+    MARKDUPLICATES(ALIGNMENT.out.raw_bam_file)
+
+    CLEAN(MARKDUPLICATES.out.marked_bam_file)
+
+    ADDREADGROUP(CLEAN.out.clean_bam_file)
+
+    INDEX(ADDREADGROUP.out.bam_file)
+
+    VALIDATE(ADDREADGROUP.out.bam_file)
+    
+    emit:
+    bam_file = ADDREADGROUP.out.bam_file
 }
 
 workflow {
-    variants()
+    mapping(sampletable_ch)
 }
 
 workflow.onComplete {

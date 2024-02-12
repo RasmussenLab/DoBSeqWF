@@ -8,7 +8,7 @@ process FASTQC {
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_fastqc.html", mode:'copy'
 
     input:
-    tuple val(sample_id), path(reads_1), path(reads_2)
+    tuple val(sample_id), path(reads)
 
     output:
     path "${sample_id}_fastqc.html", emit: fastqc_html
@@ -19,15 +19,11 @@ process FASTQC {
     fastqc                                  \
         --threads ${task.cpus}              \
         --quiet                             \
-        ${reads_1} ${reads_2}
+        ${reads[0]} ${reads[1]}
     """
     
     stub:
     """
-    echo "fastqc \
-            --threads ${task.cpus} \
-            --quiet ${reads_1} ${reads_2}"
-    
     touch ${sample_id}_fastqc.html
     touch ${sample_id}_fastqc.zip
     """
