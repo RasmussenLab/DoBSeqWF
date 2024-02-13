@@ -31,6 +31,7 @@ log.info paramsSummaryLog(workflow)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// Mapping
 include { FASTQC                    } from './modules/fastqc'
 include { ALIGNMENT                 } from './modules/alignment'
 include { MARKDUPLICATES            } from './modules/markduplicates'
@@ -38,6 +39,11 @@ include { CLEAN                     } from './modules/clean'
 include { ADDREADGROUP              } from './modules/addreadgroup'
 include { INDEX                     } from './modules/index'
 include { VALIDATE                  } from './modules/validate'
+
+// Variant calling
+include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
+include { INDELQUAL                 } from './modules/indelqual'
+include { LOFREQ                    } from './modules/lofreq'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,10 +63,11 @@ sampletable_ch = Channel
 */
 
 reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genomeVersion + ".fna", checkIfExists: true).collect()
+bedfile_ch = Channel.fromPath(params.bedfile).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    MAIN WORKFLOW
+    MAPPING WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -93,10 +100,33 @@ workflow mapping {
     bam_file = ADDREADGROUP.out.bam_file
 }
 
-workflow {
-    mapping(sampletable_ch)
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CALLING WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow calling {
+    take:
+    bam_file
+
+    main:
+    
+    // GATK
+    HAPLOTYPECALLER(bam_file, reference_genome_ch, bedfile_ch)
+    
+    // Lofreq
+    INDELQUAL(bam_file, reference_genome_ch)
+    LOFREQ(INDELQUAL.out.iq_bam_file, reference_genome_ch, bedfile_ch)
 }
 
-workflow.onComplete {
-    log.info ( workflow.success ? "\n DoBSeq pipeline is done!\n" : "Oops .. something went wrong" )
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow {
+    mapping(sampletable_ch)
+    calling(mapping.out.bam_file)
 }
