@@ -1,0 +1,15 @@
+# mads
+# 2024-02-13
+
+# Reads created by:
+# No variation
+wgsim -N 1000 -1 150 -2 150 -r 0 -R 0 -X 0 -e 0.0000 assets/test_data/small/sequence_variations/no_variation.fna assets/test_data/small/samples/no_variant_1.fq assets/test_data/small/samples/no_variant_2.fq
+# SNP G->C at index 26
+wgsim -N 1000 -1 150 -2 150 -r 0 -R 0 -X 0 -e 0.0000 assets/test_data/small/sequence_variations/snp_variation.fna assets/test_data/small/samples/snp_variant_1.fq assets/test_data/small/samples/snp_variant_2.fq
+# Deletion
+wgsim -N 15 -1 150 -2 150 -r 0 -R 0 -X 0 assets/test_data/small/reference/small_reference.fna assets/test_data/small/samples/no_variant_1.fq assets/test_data/small/samples/no_variant_1.fq
+
+# Reference indexed by:
+bwa index assets/test_data/small/reference/small_reference.fna
+samtools faidx assets/test_data/small/reference/small_reference.fna
+gatk CreateSequenceDictionary -R assets/test_data/small/reference/small_reference.fna -O assets/test_data/small/reference/small_reference.dict
