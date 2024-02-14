@@ -7,9 +7,10 @@ process HAPLOTYPECALLER {
     // time = { 6.hour * task.attempt }
 
     publishDir "${params.outputDir}/log/haplotypecaller/", pattern: "${sample_id}.haplotypecaller.log", mode:'copy'
+    publishDir "${params.outputDir}/haplotypecaller/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
 
     input:
-    tuple val(sample_id), path(bam_file)
+    tuple val(sample_id), path(bam_file), path(bam_index_file)
     path reference_genome
     path bedfile
 
@@ -18,10 +19,11 @@ process HAPLOTYPECALLER {
     path "${sample_id}.haplotypecaller.log"
 
     script:
+    def db = file(params.reference_genome).getName() + ".fna"
     """
     gatk HaplotypeCaller                                \
         --max-reads-per-alignment-start 0               \
-        -R ${reference_genome}                          \
+        -R ${db}                                        \
         -I ${bam_file}                                  \
         -L ${bedfile}                                   \
         --disable-read-filter NotDuplicateReadFilter    \
@@ -29,9 +31,10 @@ process HAPLOTYPECALLER {
         -ploidy ${params.ploidy}                        \
         --max-alternate-alleles 3                       \
         --max-num-haplotypes-in-population 1000         \
-        &> "${sample_id}.haplotypecaller.log"
+        > >(tee -a "${sample_id}.haplotypecaller.log")  \
+        2> >(tee -a "${sample_id}.haplotypecaller.log" >&2)
     """
-    
+
     stub:
     """
     touch "${sample_id}.GATK.vcf.gz" "${sample_id}.haplotypecaller.log"

@@ -17,18 +17,21 @@ process INDELQUAL {
     path "${sample_id}.lofreq.iq.log"
 
     script:
+    def db = file(params.reference_genome).getName() + ".fna"
     """
-    lofreq indelqual                        \
-        --dindel                            \
-        -f ${reference_genome}              \
-        -o "${sample_id}.iq.bam"            \
-        ${bam_file}                         \
-        &> "${sample_id}.lofreq.iq.log"
+    lofreq indelqual                                    \
+        --dindel                                        \
+        -f ${db}                                        \
+        -o "${sample_id}.iq.bam"                        \
+        ${bam_file}                                     \
+        > >(tee -a "${sample_id}.lofreq.iq.log")        \
+        2> >(tee -a "${sample_id}.lofreq.iq.log" >&2)
     """
     
     stub:
     """
-    touch "${sample_id}.iq.bam" "${sample_id}.lofreq.iq.log"
+    touch "${sample_id}.iq.bam"
+    touch "${sample_id}.lofreq.iq.log"
     """
 }
 

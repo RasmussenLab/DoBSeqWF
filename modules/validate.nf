@@ -19,7 +19,7 @@ process VALIDATE {
         -I ${bam_file}                  \
         -M SUMMARY                      \
         --IGNORE_WARNINGS true          \
-        -O "${sample_id}.validation"
+        -O "${sample_id}.validation.log"
     """
     
     stub:

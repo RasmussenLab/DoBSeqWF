@@ -9,7 +9,7 @@ process ADDREADGROUP {
     tuple val(sample_id), path(bam_file)
 
     output:
-    tuple val(sample_id), path("${bam_file}.bam"), emit: bam_file
+    tuple val(sample_id), path("${sample_id}.bam"), emit: bam_file
 
     script:
     """
@@ -20,12 +20,12 @@ process ADDREADGROUP {
         --RGLB lib1                 \
         --RGPL illumina             \
         --RGPU unit1                \
-        --RGSM ID ${sample_id}
+        --RGSM ${sample_id}
     """
     
     stub:
     """
-    touch "${bam_file}.bam"
+    touch "${sample_id}.bam"
     """
 }
 

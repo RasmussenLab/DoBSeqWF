@@ -9,17 +9,18 @@ process CLEAN {
     tuple val(sample_id), path(bam_file)
 
     output:
-    tuple val(sample_id), path("${bam_file}.clean.bam"), emit: clean_bam_file
+    tuple val(sample_id), path("${sample_id}.clean.bam"), emit: clean_bam_file
 
     script:
     """
-    samtools view 
-        -F 1024 
-        -F 512 
-        -F 2048 
-        -q 20 
-        -b 
-        -o "${bam_file}.clean.bam"
+    samtools view                       \
+        -F 1024                         \
+        -F 512                          \
+        -F 2048                         \
+        -q 20                           \
+        -b                              \
+        -o "${sample_id}.clean.bam"     \
+        ${bam_file}
 
     ## -F 1024: exclude read that fails platform/vendor quality checks
     ## -F 512: exclude read that is PCR or optical duplicate
@@ -30,7 +31,7 @@ process CLEAN {
     
     stub:
     """
-    touch "${bam_file}.clean.bam"
+    touch "${sample_id}.clean.bam"
     """
 }
 

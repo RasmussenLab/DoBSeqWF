@@ -16,7 +16,7 @@ process ALIGNMENT {
     path "${sample_id}.log"
 
     script:
-    def db = reference_genome.getName()
+    def db = file(params.reference_genome).getName() + ".fna"
     """
     bwa mem                                                             \
         -t ${task.cpus}                                                 \
@@ -26,11 +26,12 @@ process ALIGNMENT {
         ${reads[0]}                                                     \
         ${reads[1]}                                                     \
         2> >(tee -a "${sample_id}.log" >&2)                             \
-            | samtools sort -o "${sample_id}.raw.bam" -                 \
+            | samtools sort -o "${sample_id}.raw.bam" -
     """
     
     stub:
     """
-    touch "${sample_id}.raw.bam" "${sample_id}.log"
+    touch "${sample_id}.raw.bam"
+    touch "${sample_id}.log"
     """
 }

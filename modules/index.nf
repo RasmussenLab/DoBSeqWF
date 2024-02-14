@@ -9,7 +9,7 @@ process INDEX {
     tuple val(sample_id), path(bam_file)
 
     output:
-    tuple val(sample_id), path("${bam_file}.bai"), emit: bam_index_file
+    tuple val(sample_id), path(bam_file), path("${bam_file}.bai"), emit: bam_file_w_index
 
     script:
     """

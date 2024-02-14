@@ -26,6 +26,7 @@ process MARKDUPLICATES {
     
     stub:
     """
-    touch "${sample_id}.marked.bam" "${sample_id}.dupMetric.log"
+    touch "${sample_id}.marked.bam" 
+    touch "${sample_id}.dupMetric.log"
     """
 }

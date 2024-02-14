@@ -9,7 +9,7 @@ process LOFREQ {
     publishDir "${params.outputDir}/log/lofreq/", pattern: "${sample_id}.lofreq.log", mode:'copy'
 
     input:
-    tuple val(sample_id), path(bam_file)
+    tuple val(sample_id), path(bam_file), path(bam_index_file)
     path reference_genome
     path bedfile
 
@@ -18,24 +18,27 @@ process LOFREQ {
     path "${sample_id}.lofreq.log"
 
     script:
+    def db = file(params.reference_genome).getName() + ".fna"
     """
-    lofreq call-parallel                    \
-        --call-indels                       \
-        --pp-threads ${task.cpus}           \
-        --force-overwrite                   \
-        --no-default-filter                 \
-        --sig 1                             \
-        --bonf 1                            \
-        -f ${reference_genome}              \
-        -l ${bedfile}                       \
-        -o "${sample_id}.lofreq.vcf.gz"     \
-        ${bam_file}                         \
-        &> "${sample_id}.lofreq.log"
+    lofreq call-parallel                            \
+        --call-indels                               \
+        --pp-threads ${task.cpus}                   \
+        --force-overwrite                           \
+        --no-default-filter                         \
+        --sig 1                                     \
+        --bonf 1                                    \
+        -f ${db}                                    \
+        -l ${bedfile}                               \
+        -o "${sample_id}.lofreq.vcf.gz"             \
+        ${bam_file}                                 \
+        > >(tee -a "${sample_id}.lofreq.log")       \
+        2> >(tee -a "${sample_id}.lofreq.log" >&2)
     """
     
     stub:
     """
-    touch "${sample_id}.lofreq.vcf.gz" "${sample_id}.lofreq.log"
+    touch "${sample_id}.lofreq.vcf.gz"
+    touch "${sample_id}.lofreq.log"
     """
 }
 

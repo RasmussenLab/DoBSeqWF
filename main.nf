@@ -54,7 +54,7 @@ include { LOFREQ                    } from './modules/lofreq'
 sampletable_ch = Channel
     .fromPath(params.sampletable)
     .splitCsv(sep: '\t')
-    .map { row -> tuple(row[0], [row[1], row[2]]) }
+    .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +62,7 @@ sampletable_ch = Channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-reference_genome_ch = Channel.fromPath(params.resourceBase + "/" + params.genomeVersion + ".fna", checkIfExists: true).collect()
+reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExists: true).collect()
 bedfile_ch = Channel.fromPath(params.bedfile).collect()
 
 /*
@@ -77,7 +77,12 @@ workflow mapping {
     
     main:
     if (params.doFastqc) {
-        FASTQC(sampletable)
+        // Single file channel conversion - run FastQC on single files.
+        sampletable_ch
+            .flatMap { sample_id, reads ->
+                return [tuple(sample_id, reads[0], 1), tuple(sample_id, reads[1], 2)]}
+            .set { sep_read_ch }
+        FASTQC(sep_read_ch)
     }
 
     // Add fastp here?
@@ -91,8 +96,6 @@ workflow mapping {
     CLEAN(MARKDUPLICATES.out.marked_bam_file)
 
     ADDREADGROUP(CLEAN.out.clean_bam_file)
-
-    INDEX(ADDREADGROUP.out.bam_file)
 
     VALIDATE(ADDREADGROUP.out.bam_file)
     
@@ -111,13 +114,21 @@ workflow calling {
     bam_file
 
     main:
-    
+
+    // LoFreq
+    if (params.doLofreq) {
+        INDELQUAL(bam_file, reference_genome_ch)
+        
+        bam_file_w_idx = INDEX(INDELQUAL.out.iq_bam_file)
+        
+        LOFREQ(bam_file_w_idx, reference_genome_ch, bedfile_ch)
+    } else {
+        bam_file_w_idx = INDEX(bam_file)
+    }
+
     // GATK
-    HAPLOTYPECALLER(bam_file, reference_genome_ch, bedfile_ch)
-    
-    // Lofreq
-    INDELQUAL(bam_file, reference_genome_ch)
-    LOFREQ(INDELQUAL.out.iq_bam_file, reference_genome_ch, bedfile_ch)
+    HAPLOTYPECALLER(bam_file_w_idx, reference_genome_ch, bedfile_ch)
+
 }
 
 /*
