@@ -132,11 +132,13 @@ workflow calling {
     // GATK
     HAPLOTYPECALLER(bam_file_w_idx, reference_genome_ch, bedfile_ch)
 
-    // Pinning
+    // Combine VCF files
     HAPLOTYPECALLER.out.vcf_file
         .mix(LOFREQ.out.vcf_file)
         .map { sample_id, vcf_file -> vcf_file }
         .set { vcf_file_ch }
+    
+    // Pin variants
     PINNING(vcf_file_ch.collect(), file(params.pooltable), file(params.decodetable))
 
 }

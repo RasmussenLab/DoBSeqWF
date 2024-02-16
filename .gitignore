@@ -171,3 +171,5 @@ sampletable.tsv
 .nextflow.log*
 .Rproj.user
 .lintr
+assets/test_data/simulated_samples
+DoBSeqWF.Rproj
