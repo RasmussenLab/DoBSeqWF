@@ -7,7 +7,7 @@ process HAPLOTYPECALLER {
     // time = { 6.hour * task.attempt }
 
     publishDir "${params.outputDir}/log/haplotypecaller/", pattern: "${sample_id}.haplotypecaller.log", mode:'copy'
-    publishDir "${params.outputDir}/haplotypecaller/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
+    publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
 
     input:
     tuple val(sample_id), path(bam_file), path(bam_index_file)
@@ -15,7 +15,7 @@ process HAPLOTYPECALLER {
     path bedfile
 
     output:
-    tuple val(sample_id), path("${sample_id}.GATK.vcf.gz"), emit: gatk_vcf_file
+    tuple val(sample_id), path("${sample_id}.GATK.vcf.gz"), emit: vcf_file
     path "${sample_id}.haplotypecaller.log"
 
     script:

@@ -7,6 +7,7 @@ process LOFREQ {
     // time = { 6.hour * task.attempt }
 
     publishDir "${params.outputDir}/log/lofreq/", pattern: "${sample_id}.lofreq.log", mode:'copy'
+    publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'
 
     input:
     tuple val(sample_id), path(bam_file), path(bam_index_file)
@@ -14,7 +15,7 @@ process LOFREQ {
     path bedfile
 
     output:
-    tuple val(sample_id), path("${sample_id}.lofreq.vcf.gz"), emit: lofreq_vcf_file
+    tuple val(sample_id), path("${sample_id}.lofreq.vcf.gz"), emit: vcf_file
     path "${sample_id}.lofreq.log"
 
     script:

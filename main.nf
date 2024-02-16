@@ -45,14 +45,17 @@ include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
 include { INDELQUAL                 } from './modules/indelqual'
 include { LOFREQ                    } from './modules/lofreq'
 
+// Variant pinning
+include { PINNING                   } from './modules/pinning'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     INPUT CHANNELS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-sampletable_ch = Channel
-    .fromPath(params.sampletable)
+pooltable_ch = Channel
+    .fromPath(params.pooltable)
     .splitCsv(sep: '\t')
     .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
 
@@ -78,7 +81,7 @@ workflow mapping {
     main:
     if (params.doFastqc) {
         // Single file channel conversion - run FastQC on single files.
-        sampletable_ch
+        pooltable_ch
             .flatMap { sample_id, reads ->
                 return [tuple(sample_id, reads[0], 1), tuple(sample_id, reads[1], 2)]}
             .set { sep_read_ch }
@@ -129,6 +132,13 @@ workflow calling {
     // GATK
     HAPLOTYPECALLER(bam_file_w_idx, reference_genome_ch, bedfile_ch)
 
+    // Pinning
+    HAPLOTYPECALLER.out.vcf_file
+        .mix(LOFREQ.out.vcf_file)
+        .map { sample_id, vcf_file -> vcf_file }
+        .set { vcf_file_ch }
+    PINNING(vcf_file_ch.collect(), file(params.pooltable), file(params.decodetable))
+
 }
 
 /*
@@ -138,6 +148,6 @@ workflow calling {
 */
 
 workflow {
-    mapping(sampletable_ch)
+    mapping(pooltable_ch)
     calling(mapping.out.bam_file)
 }

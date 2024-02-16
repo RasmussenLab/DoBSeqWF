@@ -169,3 +169,5 @@ trace.txt
 report.html
 sampletable.tsv
 .nextflow.log*
+.Rproj.user
+.lintr

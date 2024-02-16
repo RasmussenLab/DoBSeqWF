@@ -1,0 +1,24 @@
+process PINNING {
+
+    // cpus = { 2 * task.attempt }
+    // memory = { 4.GB * task.attempt }
+    // time = { 1.hour * task.attempt }
+
+    publishDir "${params.outputDir}/pinned_variants/", pattern: "*.tsv", mode:'copy'
+    publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'
+
+    input:
+    path("${sample_id}.GATK.vcf.gz"), stageAs: "variants/*"
+    path pooltable, stageAs: "pooltable.tsv"
+    path decodetable, stageAs: "decodetable.tsv"
+
+    output:
+    path "*.tsv", emit: pinned_variants
+    path "*.pdf"
+
+    script:
+    """
+    pinning.R \
+        --nextflow
+    """
+}
