@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-// mads 2024-02-12
+// mads 2024-02-16
 
 // Yaml parser
 import org.yaml.snakeyaml.Yaml
@@ -76,21 +76,21 @@ bedfile_ch = Channel.fromPath(params.bedfile).collect()
 
 workflow mapping {
     take:
-    sampletable
+    pooltable
     
     main:
     if (params.doFastqc) {
         // Single file channel conversion - run FastQC on single files.
         pooltable_ch
-            .flatMap { sample_id, reads ->
-                return [tuple(sample_id, reads[0], 1), tuple(sample_id, reads[1], 2)]}
+            .flatMap { pool_id, reads ->
+                return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
             .set { sep_read_ch }
         FASTQC(sep_read_ch)
     }
 
     // Add fastp here?
 
-    ALIGNMENT(sampletable, reference_genome_ch)
+    ALIGNMENT(pooltable, reference_genome_ch)
 
     // Add samtools stats and mosdepth
 
@@ -135,7 +135,7 @@ workflow calling {
     // Combine VCF files
     HAPLOTYPECALLER.out.vcf_file
         .mix(LOFREQ.out.vcf_file)
-        .map { sample_id, vcf_file -> vcf_file }
+        .map { pool_id, vcf_file -> vcf_file }
         .set { vcf_file_ch }
     
     // Pin variants
@@ -152,4 +152,8 @@ workflow calling {
 workflow {
     mapping(pooltable_ch)
     calling(mapping.out.bam_file)
+}
+
+workflow.onComplete {
+    log.info ( workflow.success ? "\nDoBSeq-WF is done!\n" : "Oops .. something went wrong" )
 }

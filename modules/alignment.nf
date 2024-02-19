@@ -18,7 +18,7 @@ process ALIGNMENT {
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     """
-    bwa mem                                                             \
+    bwa-mem2 mem                                                        \
         -t ${task.cpus}                                                 \
         -K 100000000                                                    \
         -v 2                                                            \
