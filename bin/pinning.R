@@ -1,13 +1,13 @@
 #!/usr/bin/env Rscript
-
-library(data.table)
-library(dplyr)
-library(readr)
-library(tidyr)
-library(purrr)
-library(ggplot2)
-library(stringr)
-library(optparse)
+package_repository <- "http://cran.us.r-project.org"
+if (!require('data.table')) install.packages('data.table', repos = package_repository); library('data.table')
+if (!require('dplyr')) install.packages('dplyr', repos = package_repository); library('dplyr')
+if (!require('readr')) install.packages('readr', repos = package_repository); library('readr')
+if (!require('tidyr')) install.packages('tidyr', repos = package_repository); library('tidyr')
+if (!require('purrr')) install.packages('purrr', repos = package_repository); library('purrr')
+if (!require('ggplot2')) install.packages('ggplot2', repos = package_repository); library('ggplot2')
+if (!require('stringr')) install.packages('stringr', repos = package_repository); library('stringr')
+if (!require('optparse')) install.packages('optparse', repos = package_repository); library('optparse')
 
 # 2024-02-15 christian
 # edit: mads

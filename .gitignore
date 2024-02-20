@@ -173,3 +173,5 @@ sampletable.tsv
 .lintr
 assets/data/simulated_samples
 DoBSeqWF.Rproj
+.rpack/
+nxf-tmp.*
