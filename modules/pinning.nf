@@ -21,4 +21,10 @@ process PINNING {
     pinning.R \
         --nextflow
     """
+
+    stub:
+    """
+    touch var_id_unique_pin.tsv
+    touch outlier_plots.pdf
+    """
 }
