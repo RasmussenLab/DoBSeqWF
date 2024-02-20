@@ -48,6 +48,9 @@ include { LOFREQ                    } from './modules/lofreq'
 // Variant pinning
 include { PINNING                   } from './modules/pinning'
 
+// QC
+include { MULTIQC                   } from './modules/multiqc'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     INPUT CHANNELS
@@ -58,6 +61,14 @@ pooltable_ch = Channel
     .fromPath(params.pooltable)
     .splitCsv(sep: '\t')
     .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    DEFAULT OUTPUT CHANNELS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+fastqc_ch = Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +97,7 @@ workflow mapping {
                 return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
             .set { sep_read_ch }
         FASTQC(sep_read_ch)
+        fastqc_ch = FASTQC.out.fastqc_zip
     }
 
     // Add fastp here?
@@ -101,7 +113,9 @@ workflow mapping {
     ADDREADGROUP(CLEAN.out.clean_bam_file)
 
     VALIDATE(ADDREADGROUP.out.bam_file)
-    
+
+    MULTIQC(fastqc_ch.mix(MARKDUPLICATES.out.dupMetric_log).collect())
+
     emit:
     bam_file = ADDREADGROUP.out.bam_file
 }
