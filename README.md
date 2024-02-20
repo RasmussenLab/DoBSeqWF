@@ -17,7 +17,7 @@ git clone https://github.com/madscort/DoBSeqWF.git .
 3. Run pipeline without input data:
 
 ```Bash
-nextflow run main.nf -profile (standard/esrum/ngc) -stub
+nextflow run main.nf -profile (standard/esrum/ngc),test -stub
 ```
 
 3. Run pipeline with tiny test data:
