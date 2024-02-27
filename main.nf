@@ -33,6 +33,9 @@ log.info paramsSummaryLog(workflow)
 
 // Mapping
 include { FASTQC                    } from './modules/fastqc'
+include { INDEX as INDEX_RAW        } from './modules/index'
+include { MOSDEPTH                  } from './modules/mosdepth'
+include { FLAGSTAT                  } from './modules/flagstat'
 include { ALIGNMENT                 } from './modules/alignment'
 include { MARKDUPLICATES            } from './modules/markduplicates'
 include { CLEAN                     } from './modules/clean'
@@ -69,6 +72,8 @@ pooltable_ch = Channel
 */
 
 fastqc_ch = Channel.empty()
+mosdepth_ch = Channel.empty()
+flagstat_ch = Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,11 +105,18 @@ workflow mapping {
         fastqc_ch = FASTQC.out.fastqc_zip
     }
 
-    // Add fastp here?
-
     ALIGNMENT(pooltable, reference_genome_ch)
 
-    // Add samtools stats and mosdepth
+    if (params.doMosdepth) {
+        INDEX_RAW(ALIGNMENT.out.raw_bam_file)
+        MOSDEPTH(INDEX_RAW.out.bam_file_w_index, bedfile_ch)
+        mosdepth_ch = MOSDEPTH.out.region_dist
+    }
+
+    if (params.doFlagstat) {
+        FLAGSTAT(ALIGNMENT.out.raw_bam_file)
+        flagstat_ch = FLAGSTAT.out.flagstat
+    }
 
     MARKDUPLICATES(ALIGNMENT.out.raw_bam_file)
 
@@ -114,7 +126,7 @@ workflow mapping {
 
     VALIDATE(ADDREADGROUP.out.bam_file)
 
-    MULTIQC(fastqc_ch.mix(MARKDUPLICATES.out.dupMetric_log).collect())
+    MULTIQC(fastqc_ch.mix(mosdepth_ch, flagstat_ch, MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
     bam_file = ADDREADGROUP.out.bam_file
@@ -132,21 +144,17 @@ workflow calling {
 
     main:
 
+    // LoFreq indelqual
+    INDELQUAL(bam_file, reference_genome_ch)
+    INDEX(INDELQUAL.out.iq_bam_file)
+
     // LoFreq
-    if (params.doLofreq) {
-        INDELQUAL(bam_file, reference_genome_ch)
-        
-        bam_file_w_idx = INDEX(INDELQUAL.out.iq_bam_file)
-        
-        LOFREQ(bam_file_w_idx, reference_genome_ch, bedfile_ch)
-    } else {
-        bam_file_w_idx = INDEX(bam_file)
-    }
+    LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     // GATK
-    HAPLOTYPECALLER(bam_file_w_idx, reference_genome_ch, bedfile_ch)
+    HAPLOTYPECALLER(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
-    // Combine VCF files
+    // Combine VCF file channels
     HAPLOTYPECALLER.out.vcf_file
         .mix(LOFREQ.out.vcf_file)
         .map { pool_id, vcf_file -> vcf_file }

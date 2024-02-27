@@ -13,7 +13,7 @@ process MARKDUPLICATES {
 
     output:
     tuple val(sample_id), path("${sample_id}.marked.bam"), emit: marked_bam_file
-    path "${sample_id}.dupMetric.log", emit: dupMetric_log
+    path "${sample_id}.dupMetric.log", emit: metrics_file
 
     script:
     """
