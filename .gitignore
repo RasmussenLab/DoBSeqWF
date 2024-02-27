@@ -171,7 +171,7 @@ sampletable.tsv
 .nextflow.log*
 .Rproj.user
 .lintr
-assets/data/simulated_samples
+assets/data/simulated_data/
 DoBSeqWF.Rproj
 .rpack/
 nxf-tmp.*
