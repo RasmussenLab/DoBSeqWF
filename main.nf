@@ -47,6 +47,7 @@ include { VALIDATE                  } from './modules/validate'
 include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
 include { INDELQUAL                 } from './modules/indelqual'
 include { LOFREQ                    } from './modules/lofreq'
+include { FILTER                    } from './modules/filter'
 
 // Variant pinning
 include { PINNING                   } from './modules/pinning'
@@ -74,6 +75,7 @@ pooltable_ch = Channel
 fastqc_ch = Channel.empty()
 mosdepth_ch = Channel.empty()
 flagstat_ch = Channel.empty()
+lofreq_ch = Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,19 +152,24 @@ workflow calling {
 
     // LoFreq
     LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+    lofreq_ch = LOFREQ.out.vcf_file
+
+    if (params.minAltSupport != 0) {
+        FILTER(LOFREQ.out.vcf_file, params.minAltSupport)
+        lofreq_ch = FILTER.out.filtered_vcf_file
+    }
 
     // GATK
     HAPLOTYPECALLER(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     // Combine VCF file channels
     HAPLOTYPECALLER.out.vcf_file
-        .mix(LOFREQ.out.vcf_file)
+        .mix(lofreq_ch)
         .map { pool_id, vcf_file -> vcf_file }
         .set { vcf_file_ch }
     
     // Pin variants
     PINNING(vcf_file_ch.collect(), file(params.pooltable), file(params.decodetable))
-
 }
 
 /*

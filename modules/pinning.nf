@@ -8,7 +8,7 @@ process PINNING {
     publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'
 
     input:
-    path("${sample_id}.GATK.vcf.gz"), stageAs: "variants/*"
+    path samples, stageAs: "variants/*"
     path pooltable, stageAs: "pooltable.tsv"
     path decodetable, stageAs: "decodetable.tsv"
 
