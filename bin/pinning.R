@@ -68,7 +68,7 @@ if (!setequal(VCF.list$pool_id,pooltable$pool_id) || anyNA(VCF.list)) {
 }
 
 #
-## Call variants for each individual pool
+## Get variants for each individual pool
 #
 
 collect.Pools <- list()
@@ -77,7 +77,7 @@ for(i in 1:nrow(VCF.list)){
   gatk_filename <- file.path(vcf_folder, VCF.list$GATK.vcf[i])
   lofreq_filename <- file.path(vcf_folder, VCF.list$Lofreq.vcf[i])
 
-  # Read and process GATK VCF file. (No aggregation of multiple alleles at same position)
+  # Read and process GATK VCF file. (multi-allelic calls are on same row.)
   GATK.vcf <- 
     fread(cmd = paste0("gunzip -c ", gatk_filename, " |  grep -v '##'"))  %>%  
     rename(CHROM = 1) %>% 
@@ -96,7 +96,7 @@ for(i in 1:nrow(VCF.list)){
     mutate(SOR = gsub("SOR=","" ,str_extract(INFO, "SOR=[[:digit:]]+.[[:digit:]]+|SOR=-[[:digit:]]+.[[:digit:]]+"))) %>% 
     mutate(FS = gsub("FS=","" ,str_extract(INFO, "FS=[[:digit:]]+.[[:digit:]]+|SOR=-[[:digit:]]+.[[:digit:]]+"))) %>% 
     mutate(GT = str_count(GT, "1")) %>% 
-    select(chr.pos,var.ID,GQ,GT, DP, AF,Alt.n, var.type, MQRankSum, FS, BaseQRankSum, SOR)
+    select(chr.pos, var.ID, GQ, GT, DP, AF,Alt.n, var.type, MQRankSum, FS, BaseQRankSum, SOR)
 
   # Read and process LoFreq VCF file
   VCF.names <- c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER" , "INFO")
@@ -224,7 +224,8 @@ collect.chrPos_df <-
 #   Count the number of pools with variant calls (in each dimension)
 #   Add genotype concordance. GT = number of alleles with alternative.
 #                             var.id = chromosome, position, ref and alt.
-#   Add allele concaordance. var.id = chromosome, position, ref and alt
+#
+#   Add allele concordance. var.id = chromosome, position, ref and alt
 
 collect.chrPos_df.UN <- 
   collect.chrPos_df %>% 
