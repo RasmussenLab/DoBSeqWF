@@ -52,6 +52,9 @@ include { FILTER                    } from './modules/filter'
 // Variant pinning
 include { PINNING                   } from './modules/pinning'
 
+// Test
+include { TEST                      } from './modules/test'
+
 // QC
 include { MULTIQC                   } from './modules/multiqc'
 
@@ -170,6 +173,9 @@ workflow calling {
     
     // Pin variants
     PINNING(vcf_file_ch.collect(), file(params.pooltable), file(params.decodetable))
+
+    emit:
+    pinned_variants = PINNING.out.pinned_variants
 }
 
 /*
@@ -181,6 +187,10 @@ workflow calling {
 workflow {
     mapping(pooltable_ch)
     calling(mapping.out.bam_file)
+
+    if (params.testing) {
+        TEST(calling.out.pinned_variants, file(params.snv_list))
+    }
 }
 
 workflow.onComplete {

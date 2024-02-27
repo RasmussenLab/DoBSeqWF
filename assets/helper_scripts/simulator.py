@@ -68,7 +68,7 @@ def simulate():
                 mut_seq = list(ref_seq)
                 for idx, (ref, alt) in snvs.items():
                     mut_seq[idx] = alt
-                    flist.write(f"sim_{i}\t{idx+1}\t{ref}\t{alt}\n")
+                    flist.write(f"sim_{i}\t{header}\t{idx+1}\t{ref}\t{alt}\n")
                 # Write mutated sequence to file:
                 fout.write(f">{header}\n")
                 fout.write("".join(mut_seq))

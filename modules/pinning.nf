@@ -13,7 +13,8 @@ process PINNING {
     path decodetable, stageAs: "decodetable.tsv"
 
     output:
-    path "*.tsv", emit: pinned_variants
+    path "var_id_unique_pin.tsv", emit: pinned_variants
+    path "*.tsv"
     path "*.pdf"
 
     script:

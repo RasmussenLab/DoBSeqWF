@@ -1,4 +1,4 @@
-sim_0	1111	T	C
-sim_1	980	C	A
-sim_2	280	T	C
-sim_3	655	C	T
+sim_0	small_ref	1111	T	C
+sim_1	small_ref	980	C	A
+sim_2	small_ref	280	T	C
+sim_3	small_ref	655	C	T
