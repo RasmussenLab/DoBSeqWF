@@ -16,7 +16,7 @@ conda install nextflow
 git clone https://github.com/madscort/DoBSeqWF.git .
 ```
 
-- Without internet access  NGC-HPC:
+- Without internet access on NGC-HPC:
 
 ```Bash
 git clone /ngc/projects/icope_staging_r/git/predisposed/.git .
