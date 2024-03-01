@@ -16,13 +16,13 @@ def simulate():
     """ Simulate single chromosome variation in a X * X dobseq matrix."""
     logger = logging.getLogger(__name__)
     
-    id = "2x2"
+    id = "20x20"
 
     reference = project_dir / "assets/data/reference_genomes/small/small_reference.fna"
     output = project_dir / f"assets/data/simulated_data/sim_{id}"
-    regions = [[1, 710], [720, 1300]]
+    regions = [[200, 710], [720, 1100]]
 
-    msize = 2       # Matrix dimension size (msize x msize)
+    msize = 20       # Matrix dimension size (msize x msize)
     snv = 1         # Single nucleotide variation per individual
     cov = 35        # Coverage per allele
     err = 0         # Base error rate
@@ -50,6 +50,7 @@ def simulate():
 
     snvlist = output / "snvlist.tsv"
     with open(snvlist, 'w') as flist:
+        uniq_idx = set()
         for seed_n, i in enumerate(range(msize**2)):
             # Create sequence variations:
             with open(sequence_folder / f"sim_{i}.fna", "w") as fout:
@@ -58,7 +59,11 @@ def simulate():
                     # Choose random region from regions:
                     region = regions[np.random.randint(0, len(regions))]
                     # Choose random index in region:
-                    snv_idx = np.random.randint(region[0], region[1])
+                    while True:
+                        snv_idx = np.random.randint(region[0], region[1])
+                        if snv_idx not in uniq_idx:
+                            uniq_idx.add(snv_idx)
+                            break
                     ref = ref_seq[snv_idx]
                     choices = ["A", "T", "C", "G"]
                     choices.remove(ref)

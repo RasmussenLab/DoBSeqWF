@@ -13,7 +13,7 @@ process INDELQUAL {
     path reference_genome
 
     output:
-    tuple val(sample_id), path("${sample_id}.iq.bam"), emit: iq_bam_file
+    tuple val(sample_id), path("${sample_id}.iq.bam"), emit: bam_file
     path "${sample_id}.lofreq.iq.log"
 
     script:

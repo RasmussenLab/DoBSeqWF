@@ -163,7 +163,7 @@ for(i in 1:nrow(VCF.list)){
   colnames(Lofreq.vcf.annotated.combined)[2:length(Lofreq.vcf.annotated.combined)] <- 
     paste0(colnames(Lofreq.vcf.annotated.combined)[2:length(Lofreq.vcf.annotated.combined)],".lofreq")
 
-  # Combine calls by chromosome position (ONLY variants in common)
+  # Combine calls by chromosome position (ONLY variants in common - filters GATK calls with no LoFreq calls and vice versa...)
   Pool_Calls <-
     inner_join(GATK.vcf, Lofreq.vcf.annotated.combined, by = "chr.pos") %>%
     mutate(Pool_ID = pool_id)

@@ -12,7 +12,8 @@ process MOSDEPTH {
 
     input:
     tuple val(sample_id), path(bam), path(bai)
-    path(targets_bed)
+    path reference
+    path targets_bed
 
     output:
     path "${sample_id}.per-base.bed.gz", emit: per_base_depth
@@ -24,6 +25,7 @@ process MOSDEPTH {
     """
     mosdepth                                \
         --threads ${task.cpus}              \
+        --fasta ${reference}                \
         --by ${targets_bed}                 \
         ${sample_id}                        \
         ${bam}
