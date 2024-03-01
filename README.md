@@ -8,10 +8,18 @@ Usage:
 conda install nextflow
 ```
 
-2. Clone repository
+2. In a clean folder - clone this repository:
+
+- With internet access:
 
 ```Bash
 git clone https://github.com/madscort/DoBSeqWF.git .
+```
+
+- Without internet access  NGC-HPC:
+
+```Bash
+git clone /ngc/projects/icope_staging_r/git/predisposed/.git .
 ```
 
 3. Run pipeline without input data:
@@ -20,13 +28,13 @@ git clone https://github.com/madscort/DoBSeqWF.git .
 nextflow run main.nf -profile (standard/esrum/ngc),test -stub
 ```
 
-3. Run pipeline with tiny test data:
+4. Run pipeline with tiny test data:
 
 ```Bash
 nextflow run main.nf -profile (standard/esrum/ngc),test
 ```
 
-4. Run pipeline with input data (see test data for file contents):
+5. Run pipeline with input data (see test data for file contents):
 
 ```Bash
 nextflow run main.nf                                       \
