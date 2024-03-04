@@ -12,7 +12,7 @@ process ALIGNMENT {
     path reference_genome
 
     output:
-    tuple val(sample_id), path("${sample_id}.raw.bam"), emit: raw_bam_file
+    tuple val(sample_id), path("${sample_id}.bam"), emit: raw_bam_file
     path "${sample_id}.log"
 
     script:
@@ -26,12 +26,12 @@ process ALIGNMENT {
         ${reads[0]}                                                     \
         ${reads[1]}                                                     \
         2> >(tee -a "${sample_id}.log" >&2)                             \
-            | samtools sort -o "${sample_id}.raw.bam" -
+            | samtools sort -o "${sample_id}.bam" -
     """
     
     stub:
     """
-    touch "${sample_id}.raw.bam"
+    touch "${sample_id}.bam"
     touch "${sample_id}.log"
     """
 }

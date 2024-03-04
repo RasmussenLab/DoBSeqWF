@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-np.random.seed(1)
+np.random.seed(12)
 
 # 2024-02-15 mads
 # Simulate all necessary input files for a DoBSeq matrix data analysis.
@@ -18,13 +18,13 @@ def simulate():
     
     id = "2x2"
 
-    reference = project_dir / "assets/test_data/reference_genomes/small/small_reference.fna"
-    output = project_dir / f"assets/test_data/simulated_samples/sim_{id}"
-    regions = [[1, 500], [600, 1000], [1100, 1300]]
+    reference = project_dir / "assets/data/reference_genomes/small/small_reference.fna"
+    output = project_dir / f"assets/data/simulated_data/sim_{id}"
+    regions = [[1, 710], [720, 1300]]
 
     msize = 2       # Matrix dimension size (msize x msize)
     snv = 1         # Single nucleotide variation per individual
-    cov = 10        # Coverage per allele
+    cov = 35        # Coverage per allele
     err = 0         # Base error rate
     mut = 0         # Mutation fraction
     indel = 0       # Indel fraction
@@ -45,7 +45,7 @@ def simulate():
     sequence_folder = output / "sequence_variations"
     sequence_folder.mkdir(parents=True, exist_ok=True)
 
-    sample_folder = output / "samples"
+    sample_folder = output / "pools"
     sample_folder.mkdir(parents=True, exist_ok=True)
 
     snvlist = output / "snvlist.tsv"
@@ -68,7 +68,7 @@ def simulate():
                 mut_seq = list(ref_seq)
                 for idx, (ref, alt) in snvs.items():
                     mut_seq[idx] = alt
-                    flist.write(f"sim_{i}\t{idx}\t{ref}\t{alt}\n")
+                    flist.write(f"sim_{i}\t{header}\t{idx+1}\t{ref}\t{alt}\n")
                 # Write mutated sequence to file:
                 fout.write(f">{header}\n")
                 fout.write("".join(mut_seq))
@@ -76,7 +76,7 @@ def simulate():
             
             # Create fastq files:
             # Random seed is changed to avoid duplicate reads.
-            cmd = ["wgsim", "-S", str(seed_n+1), "-N", str(n_reads), "-1", "150", "-2", "150", "-e", str(err), "-r", str(mut), "-R", str(indel), "-X",
+            cmd = ["wgsim", "-S", str(seed_n+3), "-N", str(n_reads), "-1", "150", "-2", "150", "-e", str(err), "-r", str(mut), "-R", str(indel), "-X",
                    str(ext), sequence_folder / f"sim_{i}.fna", sample_folder / f"sim_{i}_1.fq", sample_folder / f"sim_{i}_2.fq"]
             return_value = subprocess.run(cmd, stdout=subprocess.DEVNULL)
             if return_value.returncode != 0:

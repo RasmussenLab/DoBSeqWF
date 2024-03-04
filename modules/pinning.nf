@@ -8,17 +8,24 @@ process PINNING {
     publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'
 
     input:
-    path("${sample_id}.GATK.vcf.gz"), stageAs: "variants/*"
+    path samples, stageAs: "variants/*"
     path pooltable, stageAs: "pooltable.tsv"
     path decodetable, stageAs: "decodetable.tsv"
 
     output:
-    path "*.tsv", emit: pinned_variants
+    path "var_id_unique_pin.tsv", emit: pinned_variants
+    path "*.tsv"
     path "*.pdf"
 
     script:
     """
     pinning.R \
         --nextflow
+    """
+
+    stub:
+    """
+    touch var_id_unique_pin.tsv
+    touch outlier_plots.pdf
     """
 }
