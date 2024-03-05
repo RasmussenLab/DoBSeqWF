@@ -18,9 +18,9 @@ def simulate():
     
     id = "2x2"
 
-    reference = project_dir / "assets/data/reference_genomes/small/small_reference.fna"
+    reference = project_dir / "assets/data/reference_genomes/chr1_subset/chr1_subset.fna"
     output = project_dir / f"assets/data/simulated_data/sim_{id}"
-    regions = [[1, 710], [720, 1300]]
+    regions = [[1000, 20000], [31000, 55000]]
 
     msize = 2       # Matrix dimension size (msize x msize)
     snv = 1         # Single nucleotide variation per individual
@@ -34,6 +34,7 @@ def simulate():
 
     with open(reference) as fin:
         header, ref_seq = next(SimpleFastaParser(fin))
+        header = header.split(" ")[0]
         ref_seq_len = len(ref_seq)
 
     n_reads = int(ref_seq_len * cov / 150)
@@ -50,6 +51,7 @@ def simulate():
 
     snvlist = output / "snvlist.tsv"
     with open(snvlist, 'w') as flist:
+        uniq_idx = set()
         for seed_n, i in enumerate(range(msize**2)):
             # Create sequence variations:
             with open(sequence_folder / f"sim_{i}.fna", "w") as fout:
@@ -58,7 +60,11 @@ def simulate():
                     # Choose random region from regions:
                     region = regions[np.random.randint(0, len(regions))]
                     # Choose random index in region:
-                    snv_idx = np.random.randint(region[0], region[1])
+                    while True:
+                        snv_idx = np.random.randint(region[0], region[1])
+                        if snv_idx not in uniq_idx and ref_seq[snv_idx] != 'N':
+                            uniq_idx.add(snv_idx)
+                            break
                     ref = ref_seq[snv_idx]
                     choices = ["A", "T", "C", "G"]
                     choices.remove(ref)

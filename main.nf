@@ -33,19 +33,23 @@ log.info paramsSummaryLog(workflow)
 
 // Mapping
 include { FASTQC                    } from './modules/fastqc'
-include { INDEX as INDEX_RAW        } from './modules/index'
 include { MOSDEPTH                  } from './modules/mosdepth'
 include { FLAGSTAT                  } from './modules/flagstat'
 include { ALIGNMENT                 } from './modules/alignment'
 include { MARKDUPLICATES            } from './modules/markduplicates'
 include { CLEAN                     } from './modules/clean'
 include { ADDREADGROUP              } from './modules/addreadgroup'
+include { INDELQUAL                 } from './modules/indelqual'
 include { INDEX                     } from './modules/index'
+include { CRAM                      } from './modules/cram'
+include { CRAMTABLE                 } from './modules/cramtable'
 include { VALIDATE                  } from './modules/validate'
+
+// Cram conversion
+include { BAM                       } from './modules/bam'
 
 // Variant calling
 include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
-include { INDELQUAL                 } from './modules/indelqual'
 include { LOFREQ                    } from './modules/lofreq'
 include { FILTER                    } from './modules/filter'
 
@@ -69,6 +73,13 @@ pooltable_ch = Channel
     .splitCsv(sep: '\t')
     .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
 
+if (params.step == 'calling') {
+    cramtable_ch = Channel
+        .fromPath(params.cramtable)
+        .splitCsv(sep: '\t')
+        .map { row -> tuple(row[0], file(row[1])) }
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     DEFAULT OUTPUT CHANNELS
@@ -79,6 +90,7 @@ fastqc_ch = Channel.empty()
 mosdepth_ch = Channel.empty()
 flagstat_ch = Channel.empty()
 lofreq_ch = Channel.empty()
+bam_file_ch = Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,7 +103,7 @@ bedfile_ch = Channel.fromPath(params.bedfile).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    MAPPING WORKFLOW
+    MAPPING SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -112,12 +124,6 @@ workflow mapping {
 
     ALIGNMENT(pooltable, reference_genome_ch)
 
-    if (params.doMosdepth) {
-        INDEX_RAW(ALIGNMENT.out.raw_bam_file)
-        MOSDEPTH(INDEX_RAW.out.bam_file_w_index, bedfile_ch)
-        mosdepth_ch = MOSDEPTH.out.region_dist
-    }
-
     if (params.doFlagstat) {
         FLAGSTAT(ALIGNMENT.out.raw_bam_file)
         flagstat_ch = FLAGSTAT.out.flagstat
@@ -129,17 +135,30 @@ workflow mapping {
 
     ADDREADGROUP(CLEAN.out.clean_bam_file)
 
-    VALIDATE(ADDREADGROUP.out.bam_file)
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(ADDREADGROUP.out.bam_file, reference_genome_ch)
+
+    CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
+    CRAMTABLE(CRAM.out.cram_info.collect())
+
+    if (params.doMosdepth) {
+        MOSDEPTH(INDEX.out.cram_file_w_index, reference_genome_ch, bedfile_ch)
+        mosdepth_ch = MOSDEPTH.out.region_dist
+    }
+
+    if (!params.testing) {
+        VALIDATE(CRAM.out.cram_file)
+    }
 
     MULTIQC(fastqc_ch.mix(mosdepth_ch, flagstat_ch, MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
-    bam_file = ADDREADGROUP.out.bam_file
+    bam_file = INDELQUAL.out.bam_file
 }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CALLING WORKFLOW
+    CALLING SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -148,10 +167,7 @@ workflow calling {
     bam_file
 
     main:
-
-    // LoFreq indelqual
-    INDELQUAL(bam_file, reference_genome_ch)
-    INDEX(INDELQUAL.out.iq_bam_file)
+    INDEX(bam_file)
 
     // LoFreq
     LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
@@ -185,10 +201,17 @@ workflow calling {
 */
 
 workflow {
-    mapping(pooltable_ch)
-    calling(mapping.out.bam_file)
+    if (params.step != 'calling') {
+        bam_file_ch = mapping(pooltable_ch)
+    } else {
+        bam_file_ch = BAM(cramtable_ch, reference_genome_ch)
+    }
 
-    if (params.testing) {
+    if (params.step != 'mapping') {
+        calling(bam_file_ch)
+    }
+
+    if (params.testing && params.step != 'mapping') {
         TEST(calling.out.pinned_variants, file(params.snv_list))
     }
 }
