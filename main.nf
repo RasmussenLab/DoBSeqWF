@@ -8,9 +8,6 @@ import org.yaml.snakeyaml.Yaml
 // Use newest nextflow dsl
 nextflow.enable.dsl = 2
 
-// Help text for input and validate parameters
-include { validateParameters; paramsHelp; paramsSummaryLog } from 'plugin/nf-validation'
-
 log.info """\
     ===================================
              D o B S e q - W F
@@ -18,12 +15,6 @@ log.info """\
     """
     .stripIndent()
 
-if (params.help) {
-   log.info paramsHelp("nextflow run main.nf")
-   exit 0
-}
-// validateParameters()
-log.info paramsSummaryLog(workflow)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
