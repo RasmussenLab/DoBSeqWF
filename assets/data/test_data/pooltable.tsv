@@ -1,4 +1,4 @@
-B0_H0	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_H0_1.fq.gz	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_H0_2.fq.gz
-B0_H1	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_H1_1.fq.gz	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_H1_2.fq.gz
-B0_V0	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_V0_1.fq.gz	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_V0_2.fq.gz
-B0_V1	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_V1_1.fq.gz	/Users/madsniels/Documents/HGV/code/DoBSeqWF/assets/data/simulated_data/sim_2x2/pools/B0_V1_2.fq.gz
+B0_H0	assets/data/test_data/pools/B0_H0_1.fq.gz	assets/data/test_data/pools/B0_H0_2.fq.gz
+B0_H1	assets/data/test_data/pools/B0_H1_1.fq.gz	assets/data/test_data/pools/B0_H1_2.fq.gz
+B0_V0	assets/data/test_data/pools/B0_V0_1.fq.gz	assets/data/test_data/pools/B0_V0_2.fq.gz
+B0_V1	assets/data/test_data/pools/B0_V1_1.fq.gz	assets/data/test_data/pools/B0_V1_2.fq.gz
