@@ -116,14 +116,14 @@ workflow mapping {
         flagstat_ch = FLAGSTAT.out.flagstat
     }
 
-    MARKDUPLICATES(ALIGNMENT.out.raw_bam_file)
+	ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
+
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file)
 
     CLEAN(MARKDUPLICATES.out.marked_bam_file)
 
-    ADDREADGROUP(CLEAN.out.clean_bam_file)
-
     // Add indel quality, ie. BI/BD tags
-    INDELQUAL(ADDREADGROUP.out.bam_file, reference_genome_ch)
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
 
     CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
     CRAMTABLE(CRAM.out.cram_info.collect())

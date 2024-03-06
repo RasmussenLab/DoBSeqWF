@@ -17,8 +17,7 @@ process MARKDUPLICATES {
 
     script:
     """
-    gatk MarkDuplicates                     \
-        --ASSUME_SORTED true                \
+    gatk MarkDuplicatesSpark                \
         --I ${bam_file}                     \
         --O "${sample_id}.marked.bam"       \
         --M "${sample_id}.dupMetric.log"
