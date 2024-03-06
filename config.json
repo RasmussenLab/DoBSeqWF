@@ -1,0 +1,9 @@
+{
+    "ploidy": 2,
+    "testing": true,
+    "pooltable": "assets/data/test_data/pooltable.tsv",
+    "decodetable": "assets/data/test_data/decodetable.tsv",
+    "reference_genome": "assets/data/reference_genomes/small/small_reference",
+    "bedfile": "assets/data/test_data/target_calling.bed",
+    "snv_list": "assets/data/test_data/snvlist.tsv"
+}

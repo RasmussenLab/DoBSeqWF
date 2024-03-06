@@ -2,14 +2,8 @@
 
 // mads 2024-02-16
 
-// Yaml parser
-import org.yaml.snakeyaml.Yaml
-
 // Use newest nextflow dsl
 nextflow.enable.dsl = 2
-
-// Help text for input and validate parameters
-include { validateParameters; paramsHelp; paramsSummaryLog } from 'plugin/nf-validation'
 
 log.info """\
     ===================================
@@ -17,13 +11,6 @@ log.info """\
     ===================================
     """
     .stripIndent()
-
-if (params.help) {
-   log.info paramsHelp("nextflow run main.nf")
-   exit 0
-}
-// validateParameters()
-log.info paramsSummaryLog(workflow)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,19 +128,21 @@ workflow mapping {
     CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
     CRAMTABLE(CRAM.out.cram_info.collect())
 
+    INDEX(INDELQUAL.out.bam_file)
+
     if (params.doMosdepth) {
-        MOSDEPTH(INDEX.out.cram_file_w_index, reference_genome_ch, bedfile_ch)
+        MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch)
         mosdepth_ch = MOSDEPTH.out.region_dist
     }
 
     if (!params.testing) {
-        VALIDATE(CRAM.out.cram_file)
+        VALIDATE(INDELQUAL.out.bam_file)
     }
 
     MULTIQC(fastqc_ch.mix(mosdepth_ch, flagstat_ch, MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
-    bam_file = INDELQUAL.out.bam_file
+    bam_file_w_index = INDEX.out.bam_file_w_index
 }
 
 /*
@@ -164,13 +153,11 @@ workflow mapping {
 
 workflow calling {
     take:
-    bam_file
+    bam_file_w_index
 
     main:
-    INDEX(bam_file)
-
     // LoFreq
-    LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+    LOFREQ(bam_file_w_index, reference_genome_ch, bedfile_ch)
     lofreq_ch = LOFREQ.out.vcf_file
 
     if (params.minAltSupport != 0) {
@@ -179,7 +166,7 @@ workflow calling {
     }
 
     // GATK
-    HAPLOTYPECALLER(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+    HAPLOTYPECALLER(bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     // Combine VCF file channels
     HAPLOTYPECALLER.out.vcf_file
@@ -202,13 +189,14 @@ workflow calling {
 
 workflow {
     if (params.step != 'calling') {
-        bam_file_ch = mapping(pooltable_ch)
+        bam_file_w_index_ch = mapping(pooltable_ch)
     } else {
-        bam_file_ch = BAM(cramtable_ch, reference_genome_ch)
+        BAM(cramtable_ch, reference_genome_ch)
+        bam_file_w_index_ch = INDEX(BAM.out.bam_file)
     }
 
     if (params.step != 'mapping') {
-        calling(bam_file_ch)
+        calling(bam_file_w_index_ch)
     }
 
     if (params.testing && params.step != 'mapping') {

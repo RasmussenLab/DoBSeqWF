@@ -12,7 +12,6 @@ process MOSDEPTH {
 
     input:
     tuple val(sample_id), path(bam), path(bai)
-    path reference
     path targets_bed
 
     output:
@@ -25,7 +24,6 @@ process MOSDEPTH {
     """
     mosdepth                                \
         --threads ${task.cpus}              \
-        --fasta ${reference}                \
         --by ${targets_bed}                 \
         ${sample_id}                        \
         ${bam}
