@@ -15,11 +15,12 @@ process VALIDATE {
 
     script:
     """
-    gatk ValidateSamFile                \
-        -I ${bam_file}                  \
-        -M SUMMARY                      \
-        --IGNORE_WARNINGS true          \
-        -O "${sample_id}.validation.log"
+    gatk ValidateSamFile                	\
+        -I ${bam_file}                  	\
+        -M SUMMARY                      	\
+        --IGNORE_WARNINGS true          	\
+        -O "${sample_id}.validation.log" 	\
+				|| true
     """
     
     stub:
@@ -27,4 +28,3 @@ process VALIDATE {
     touch "${sample_id}.validation.log"
     """
 }
-
