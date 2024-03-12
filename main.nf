@@ -38,7 +38,16 @@ include { EXTRACT_UMI               } from './modules/extract_umi'
 include { FASTQ                     } from './modules/fastq'
 include { MERGEBAM                  } from './modules/mergebam'
 include { HSMETRICS                 } from './modules/hsmetrics'
+include { MARKDUPLICATES as RAW_DUP } from './modules/markduplicates'
+include { INDEX as RAW_INDEX        } from './modules/index'
+include { FLAGSTAT as RAW_FLAGSTAT  } from './modules/flagstat'
+include { MOSDEPTH as RAW_DEPTH     } from './modules/mosdepth'
 include { GROUP_UMI                 } from './modules/group_umi'
+include { CALL_CONSENSUS            } from './modules/call_consensus'
+include { ALIGNMENT as CONS_ALIGN   } from './modules/alignment'
+include { FASTQ as CONS_FASTQ       } from './modules/fastq'
+include { MERGE_CONSENSUS           } from './modules/merge_consensus'
+include { HSMETRICS as CONS_METRIC  } from './modules/hsmetrics'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -175,22 +184,21 @@ workflow umi_mapping {
     FASTQ(EXTRACT_UMI.out.umi_extracted_ubam_file)
 
     // Run FastQC on UMI extracted FastQ files
-    if (params.doFastqc) {
-        // Single file channel conversion - run FastQC on single files.
-        FASTQ.out.fastq_files
-            .flatMap { pool_id, reads ->
-                return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
-            .set { sep_read_ch }
-        FASTQC(sep_read_ch)
-        fastqc_ch = FASTQC.out.fastqc_zip
-    }
+
+    // Single file channel conversion - run FastQC on single files.
+    FASTQ.out.fastq_files
+        .flatMap { pool_id, reads ->
+            return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
+        .set { sep_read_ch }
+    FASTQC(sep_read_ch)
+    fastqc_ch = FASTQC.out.fastqc_zip
 
     // Align UMI extracted FastQ files
     ALIGNMENT(FASTQ.out.fastq_files, reference_genome_ch)
 
-    // Merge aligned bam with unaligned bam with UMI tags.
-    // This is done to keep the UMI tags in the aligned bam file. (removed by fastq->bam conversion) 
-    
+    // Merge aligned bam with unaligned UMI tagged bam.
+    // This is done to keep the UMI tags in the aligned bam file. (removed by bam->fastq conversion) 
+    //
     // Join bam channels by sample_id
     ALIGNMENT.out.raw_bam_file
         .join(EXTRACT_UMI.out.umi_extracted_ubam_file)
@@ -198,22 +206,68 @@ workflow umi_mapping {
     // Merge files
     MERGEBAM(bam_files_joined, reference_genome_ch)
     
-    // Collect Hs metrics
+    // Collect Hs metrics - Todo
     // HSMETRICS(MERGEBAM.out.bam_file, reference_genome_ch, bedfile_ch)
+
+    // Metrics before consensus calling
+    RAW_DUP(MERGEBAM.out.bam_file)
+    RAW_INDEX(MERGEBAM.out.bam_file)
+    RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch)
+    RAW_FLAGSTAT(MERGEBAM.out.bam_file)
 
     // Group reads by UMI
     GROUP_UMI(MERGEBAM.out.bam_file)
+
+    // Call consensus reads.
+    CALL_CONSENSUS(GROUP_UMI.out.grouped_bam_file)
     
-    // bam to fastq
+    // Convert consensus unaligned bam to FastQ
+    CONS_FASTQ(CALL_CONSENSUS.out.consensus_ubam_file)
 
-    // align duplex consensus
+    // Align consensus
+    CONS_ALIGN(CONS_FASTQ.out.fastq_files, reference_genome_ch)
 
-    // merge consenus ubam and consensus bam
+    // Merge consenus ubam and consensus bam
+    CONS_ALIGN.out.raw_bam_file
+        .join(CALL_CONSENSUS.out.consensus_ubam_file)
+        .set { consensus_bam_files_joined }
+    MERGE_CONSENSUS(consensus_bam_files_joined)
 
-    // add read group
+    // Add read group to final bam file for GATK compatibility.
+    ADDREADGROUP(MERGE_CONSENSUS.out.bam_file)
 
-    // hs metrics
-}
+    // Repeat HS metrics on final bam file
+    // CONS_METRIC(ADDREADGROUP.out.bam_file, reference_genome_ch, bedfile_ch)
+
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file)
+
+    CLEAN(MARKDUPLICATES.out.marked_bam_file)
+
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
+
+    CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
+    CRAMTABLE(CRAM.out.cram_info.collect())
+
+    INDEX(INDELQUAL.out.bam_file)
+
+    // Metrics after consensus calling
+    FLAGSTAT(INDELQUAL.out.bam_file)
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch)
+
+    VALIDATE(INDELQUAL.out.bam_file)
+    
+    MULTIQC(FASTQC.out.fastqc_zip.mix(
+        RAW_DEPTH.out.region_dist,
+        RAW_DUP.out.metrics_file,
+        RAW_FLAGSTAT.out.flagstat,
+        MOSDEPTH.out.region_dist,
+        FLAGSTAT.out.flagstat,
+        MARKDUPLICATES.out.metrics_file).collect())
+
+    emit:
+    bam_file_w_index = INDEX.out.bam_file_w_index
+}   
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
