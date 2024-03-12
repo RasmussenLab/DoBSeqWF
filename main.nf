@@ -32,6 +32,9 @@ include { CRAM                      } from './modules/cram'
 include { CRAMTABLE                 } from './modules/cramtable'
 include { VALIDATE                  } from './modules/validate'
 
+// UMI Mapping
+include { UBAM                      } from './modules/ubam'
+
 // Cram conversion
 include { BAM                       } from './modules/bam'
 
@@ -147,6 +150,56 @@ workflow mapping {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UMI AWARE MAPPING SUB-WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow umi_mapping {
+    take:
+    pooltable
+    
+    main:
+    if (params.doFastqc) {
+        // Single file channel conversion - run FastQC on single files.
+        pooltable_ch
+            .flatMap { pool_id, reads ->
+                return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
+            .set { sep_read_ch }
+        FASTQC(sep_read_ch)
+        fastqc_ch = FASTQC.out.fastqc_zip
+    }
+
+    UBAM(pooltable_ch)
+
+    // UMI extraction
+
+    // uBAM to fastq
+
+    // fastqc
+
+    // align
+
+    // merge bams
+
+    // hsmetrics
+
+    // group by umi
+
+    // call consensus
+    
+    // bam to fastq
+
+    // align duplex consensus
+
+    // merge consenus ubam and consensus bam
+
+    // add read group
+
+    // hs metrics
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CALLING SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -188,6 +241,10 @@ workflow calling {
 */
 
 workflow {
+    umi_mapping(pooltable_ch)
+}
+
+workflow all {
     if (params.step != 'calling') {
         bam_file_w_index_ch = mapping(pooltable_ch)
     } else {
