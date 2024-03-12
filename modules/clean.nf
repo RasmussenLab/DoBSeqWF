@@ -17,6 +17,7 @@ process CLEAN {
         -F 1024                         \
         -F 512                          \
         -F 2048                         \
+        -q 20                           \
         -b                              \
         -o "${sample_id}.clean.bam"     \
         ${bam_file}

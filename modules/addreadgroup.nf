@@ -6,7 +6,7 @@ process ADDREADGROUP {
     // time = { 6.hour * task.attempt }
 
     input:
-    tuple val(sample_id), path(bam_file)
+    tuple val(sample_id), path(bam_file, stageAs: "raw/*")
 
     output:
     tuple val(sample_id), path("${sample_id}.bam"), emit: bam_file
@@ -14,7 +14,7 @@ process ADDREADGROUP {
     script:
     """
     gatk AddOrReplaceReadGroups     \
-        --INPUT ${bam_file}         \
+        --INPUT ${bam_file}   			\
         --OUTPUT "${sample_id}.bam" \
         --RGID 4                    \
         --RGLB lib1                 \
@@ -28,4 +28,3 @@ process ADDREADGROUP {
     touch "${sample_id}.bam"
     """
 }
-

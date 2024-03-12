@@ -17,16 +17,19 @@ process ALIGNMENT {
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
+    // int bwa_cpus = Math.max((task.cpus * 0.75) as int, 1)
+    // int samtools_cpus = Math.max(task.cpus - bwa_cpus, 1)
+
     """
     bwa-mem2 mem                                                        \
-        -t ${task.cpus}                                                 \
+        -t ${task.cpus-10}                                              \
         -K 100000000                                                    \
         -v 2                                                            \
         ${db}                                                           \
         ${reads[0]}                                                     \
         ${reads[1]}                                                     \
         2> >(tee -a "${sample_id}.log" >&2)                             \
-            | samtools sort -o "${sample_id}.bam" -
+            | samtools sort -@ 10 -o "${sample_id}.bam" -
     """
     
     stub:
