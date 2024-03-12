@@ -34,6 +34,8 @@ include { VALIDATE                  } from './modules/validate'
 
 // UMI Mapping
 include { UBAM                      } from './modules/ubam'
+include { UMI_EXTRACT               } from './modules/umi_extract'
+include { FASTQ                     } from './modules/fastq'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -169,11 +171,14 @@ workflow umi_mapping {
         fastqc_ch = FASTQC.out.fastqc_zip
     }
 
+    // Convert FastQ to unaligned bam file
     UBAM(pooltable_ch)
 
-    // UMI extraction
+    // Extract UMI from unaligned bam file
+    UMI_EXTRACT(UBAM.out.unaligned_bam_file)
 
-    // uBAM to fastq
+    // Convert unaligned bam file to fastq
+    FASTQ(UMI_EXTRACT.out.umi_extracted_ubam_file)
 
     // fastqc
 
