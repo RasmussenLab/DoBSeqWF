@@ -10,12 +10,12 @@ process UBAM {
     tuple val(sample_id), path(reads)
 
     output:
-    tuple val(sample_id), path("${sample_id}.bam"), emit: unaligned_bam_file
+    tuple val(sample_id), path("${sample_id}.ubam"), emit: unaligned_bam_file
 
     script:
     """
     gatk FastqToSam             \
-        O="${sample_id}.bam"    \
+        O="${sample_id}.ubam"    \
         F1=${reads[0]}          \
         F2=${reads[0]}          \
         SM=${sample_id}         \
@@ -26,6 +26,6 @@ process UBAM {
     
     stub:
     """
-    touch "${sample_id}.bam"
+    touch "${sample_id}.ubam"
     """
 }

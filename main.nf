@@ -34,8 +34,11 @@ include { VALIDATE                  } from './modules/validate'
 
 // UMI Mapping
 include { UBAM                      } from './modules/ubam'
-include { UMI_EXTRACT               } from './modules/umi_extract'
+include { EXTRACT_UMI               } from './modules/extract_umi'
 include { FASTQ                     } from './modules/fastq'
+include { MERGEBAM                  } from './modules/mergebam'
+include { HSMETRICS                 } from './modules/hsmetrics'
+include { GROUP_UMI                 } from './modules/group_umi'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -161,9 +164,20 @@ workflow umi_mapping {
     pooltable
     
     main:
+
+    // Convert FastQ to unaligned bam file
+    UBAM(pooltable_ch)
+
+    // Extract UMI from unaligned bam file
+    EXTRACT_UMI(UBAM.out.unaligned_bam_file)
+
+    // Convert unaligned bam file to fastq
+    FASTQ(EXTRACT_UMI.out.umi_extracted_ubam_file)
+
+    // Run FastQC on UMI extracted FastQ files
     if (params.doFastqc) {
         // Single file channel conversion - run FastQC on single files.
-        pooltable_ch
+        FASTQ.out.fastq_files
             .flatMap { pool_id, reads ->
                 return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
             .set { sep_read_ch }
@@ -171,26 +185,24 @@ workflow umi_mapping {
         fastqc_ch = FASTQC.out.fastqc_zip
     }
 
-    // Convert FastQ to unaligned bam file
-    UBAM(pooltable_ch)
+    // Align UMI extracted FastQ files
+    ALIGNMENT(FASTQ.out.fastq_files, reference_genome_ch)
 
-    // Extract UMI from unaligned bam file
-    UMI_EXTRACT(UBAM.out.unaligned_bam_file)
+    // Merge aligned bam with unaligned bam with UMI tags.
+    // This is done to keep the UMI tags in the aligned bam file. (removed by fastq->bam conversion) 
+    
+    // Join bam channels by sample_id
+    ALIGNMENT.out.raw_bam_file
+        .join(EXTRACT_UMI.out.umi_extracted_ubam_file)
+        .set { bam_files_joined }
+    // Merge files
+    MERGEBAM(bam_files_joined, reference_genome_ch)
+    
+    // Collect Hs metrics
+    // HSMETRICS(MERGEBAM.out.bam_file, reference_genome_ch, bedfile_ch)
 
-    // Convert unaligned bam file to fastq
-    FASTQ(UMI_EXTRACT.out.umi_extracted_ubam_file)
-
-    // fastqc
-
-    // align
-
-    // merge bams
-
-    // hsmetrics
-
-    // group by umi
-
-    // call consensus
+    // Group reads by UMI
+    GROUP_UMI(MERGEBAM.out.bam_file)
     
     // bam to fastq
 
