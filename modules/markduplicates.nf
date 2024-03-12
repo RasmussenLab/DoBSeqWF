@@ -17,7 +17,7 @@ process MARKDUPLICATES {
 
     script:
     """
-    gatk MarkDuplicatesSpark                \
+    gatk MarkDuplicates                     \
         --I ${bam_file}                     \
         --O "${sample_id}.marked.bam"       \
         --M "${sample_id}.dupMetric.log"

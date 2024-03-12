@@ -14,7 +14,7 @@ process ADDREADGROUP {
     script:
     """
     gatk AddOrReplaceReadGroups     \
-        --INPUT ${bam_file}   			\
+        --INPUT ${bam_file}   		\
         --OUTPUT "${sample_id}.bam" \
         --RGID 4                    \
         --RGLB lib1                 \

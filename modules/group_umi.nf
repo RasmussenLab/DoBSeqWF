@@ -9,7 +9,7 @@ process GROUP_UMI {
     tuple val(sample_id), path(bam_file, stageAs: 'raw/*')
 
     output:
-    tuple val(sample_id), path("${sample_id}.bam"), emit: umi_grouped_bam_file
+    tuple val(sample_id), path("${sample_id}.bam"), emit: grouped_bam_file
 
     script:
     """
