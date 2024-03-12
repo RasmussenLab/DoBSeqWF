@@ -1,0 +1,7 @@
+name: fgbio
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::fgbio=1.5.1
