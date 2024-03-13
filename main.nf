@@ -210,10 +210,10 @@ workflow umi_mapping {
     // HSMETRICS(MERGEBAM.out.bam_file, reference_genome_ch, bedfile_ch)
 
     // Metrics before consensus calling
-    RAW_DUP(MERGEBAM.out.bam_file)
+    RAW_DUP(MERGEBAM.out.bam_file, "raw")
     RAW_INDEX(MERGEBAM.out.bam_file)
-    RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch)
-    RAW_FLAGSTAT(MERGEBAM.out.bam_file)
+    RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
+    RAW_FLAGSTAT(MERGEBAM.out.bam_file, "raw")
 
     // Group reads by UMI
     GROUP_UMI(MERGEBAM.out.bam_file)
@@ -231,7 +231,7 @@ workflow umi_mapping {
     CONS_ALIGN.out.raw_bam_file
         .join(CALL_CONSENSUS.out.consensus_ubam_file)
         .set { consensus_bam_files_joined }
-    MERGE_CONSENSUS(consensus_bam_files_joined)
+    MERGE_CONSENSUS(consensus_bam_files_joined, reference_genome_ch)
 
     // Add read group to final bam file for GATK compatibility.
     ADDREADGROUP(MERGE_CONSENSUS.out.bam_file)
@@ -239,7 +239,7 @@ workflow umi_mapping {
     // Repeat HS metrics on final bam file
     // CONS_METRIC(ADDREADGROUP.out.bam_file, reference_genome_ch, bedfile_ch)
 
-    MARKDUPLICATES(ADDREADGROUP.out.bam_file)
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file, "")
 
     CLEAN(MARKDUPLICATES.out.marked_bam_file)
 
@@ -252,8 +252,8 @@ workflow umi_mapping {
     INDEX(INDELQUAL.out.bam_file)
 
     // Metrics after consensus calling
-    FLAGSTAT(INDELQUAL.out.bam_file)
-    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch)
+    FLAGSTAT(INDELQUAL.out.bam_file, "")
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
 
     VALIDATE(INDELQUAL.out.bam_file)
     
