@@ -8,7 +8,7 @@ process FASTQC {
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${read.simpleName}_fastqc.html", mode:'copy'
 
     input:
-    tuple val(sample_id), path(read), val(read_number)
+    tuple val(sample_id), path(read)
 
     output:
     path "${read.simpleName}_fastqc.html", emit: fastqc_html

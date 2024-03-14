@@ -186,11 +186,7 @@ workflow umi_mapping {
     // Run FastQC on UMI extracted FastQ files
 
     // Single file channel conversion - run FastQC on single files.
-    FASTQ.out.fastq_files
-        .flatMap { pool_id, reads ->
-            return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
-        .set { sep_read_ch }
-    FASTQC(sep_read_ch)
+    FASTQC(FASTQ.out.fastq_files)
     fastqc_ch = FASTQC.out.fastqc_zip
 
     // Align UMI extracted FastQ files
