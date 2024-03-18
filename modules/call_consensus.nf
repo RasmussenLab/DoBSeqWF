@@ -13,13 +13,13 @@ process CALL_CONSENSUS {
 
     script:
     """
-    fgbio CallDuplexConsensusReads          \
+    fgbio --compression 1 --async-io CallDuplexConsensusReads          \
         --input=${bam_file}                 \
         --output="${sample_id}.ubam"        \
         --error-rate-pre-umi=45             \
         --error-rate-post-umi=30            \
         --min-input-base-quality=30         \
-        --min-reads 2 1 1
+        --min-reads 1 0 0
     """
     
     stub:

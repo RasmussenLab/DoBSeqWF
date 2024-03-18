@@ -16,6 +16,7 @@ process MERGEBAM {
     def db = file(params.reference_genome).getName() + ".fna"
     """
     gatk MergeBamAlignment              \
+        TMP_DIR=.                       \
         UNMAPPED=${ubam_file}           \
         ALIGNED=${bam_file}             \
         O=${sample_id}_raw.bam          \

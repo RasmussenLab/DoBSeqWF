@@ -21,8 +21,8 @@ process MARKDUPLICATES {
     """
     gatk MarkDuplicates                     \
         --I ${bam_file}                     \
-        --O "${sample_id}.marked.bam"       \
-        --M ${log_filename}
+        --M ${log_filename}                 \
+        --O ${sample_id}.marked.bam
     """
     
     stub:

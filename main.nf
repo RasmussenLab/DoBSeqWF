@@ -33,21 +33,26 @@ include { CRAMTABLE                 } from './modules/cramtable'
 include { VALIDATE                  } from './modules/validate'
 
 // UMI Mapping
+include { DOWNSAMPLE                } from './modules/downsample'
 include { UBAM                      } from './modules/ubam'
 include { EXTRACT_UMI               } from './modules/extract_umi'
 include { FASTQ                     } from './modules/fastq'
 include { MERGEBAM                  } from './modules/mergebam'
-include { HSMETRICS                 } from './modules/hsmetrics'
-include { MARKDUPLICATES as RAW_DUP } from './modules/markduplicates'
+include { HS_METRICS                } from './modules/hs_metrics'
+include { ALIGNMENT_METRICS         } from './modules/alignment_metrics'
+include { GC_METRICS                } from './modules/gc_metrics'
+include { INSERT_SIZE_METRICS       } from './modules/insert_size_metrics'
+include { DUPLICATE_METRICS         } from './modules/duplicate_metrics'
 include { INDEX as RAW_INDEX        } from './modules/index'
 include { FLAGSTAT as RAW_FLAGSTAT  } from './modules/flagstat'
 include { MOSDEPTH as RAW_DEPTH     } from './modules/mosdepth'
 include { GROUP_UMI                 } from './modules/group_umi'
+include { UMI_METRICS               } from './modules/umi_metrics'
 include { CALL_CONSENSUS            } from './modules/call_consensus'
 include { ALIGNMENT as CONS_ALIGN   } from './modules/alignment'
 include { FASTQ as CONS_FASTQ       } from './modules/fastq'
 include { MERGE_CONSENSUS           } from './modules/merge_consensus'
-include { HSMETRICS as CONS_METRIC  } from './modules/hsmetrics'
+include { HS_METRICS as CONS_METRIC  } from './modules/hs_metrics'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -90,6 +95,7 @@ if (params.step == 'calling') {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+read_ch = Channel.empty()
 fastqc_ch = Channel.empty()
 mosdepth_ch = Channel.empty()
 flagstat_ch = Channel.empty()
@@ -103,7 +109,10 @@ bam_file_ch = Channel.empty()
 */
 
 reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExists: true).collect()
+
+// Target regions bedfile and gatk dictfile
 bedfile_ch = Channel.fromPath(params.bedfile).collect()
+dictfile_ch = Channel.fromPath(params.dictfile).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -174,8 +183,14 @@ workflow umi_mapping {
     
     main:
 
+    if (params.downsample > 0) {
+        read_ch = DOWNSAMPLE(pooltable_ch, params.downsample)
+    } else {
+        read_ch = pooltable_ch
+    }
+
     // Convert FastQ to unaligned bam file
-    UBAM(pooltable_ch)
+    UBAM(read_ch)
 
     // Extract UMI from unaligned bam file
     EXTRACT_UMI(UBAM.out.unaligned_bam_file)
@@ -203,16 +218,22 @@ workflow umi_mapping {
     MERGEBAM(bam_files_joined, reference_genome_ch)
     
     // Collect Hs metrics - Todo
-    // HSMETRICS(MERGEBAM.out.bam_file, reference_genome_ch, bedfile_ch)
+    // HS_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, dictfile_ch)
 
     // Metrics before consensus calling
-    RAW_DUP(MERGEBAM.out.bam_file, "raw")
+    ALIGNMENT_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, "raw")
+    GC_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, "raw")
+    INSERT_SIZE_METRICS(MERGEBAM.out.bam_file, "raw")
+    DUPLICATE_METRICS(MERGEBAM.out.bam_file, "raw")
+
     RAW_INDEX(MERGEBAM.out.bam_file)
     RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
-    RAW_FLAGSTAT(MERGEBAM.out.bam_file, "raw")
 
     // Group reads by UMI
     GROUP_UMI(MERGEBAM.out.bam_file)
+
+    // Collect UMI metrics
+    UMI_METRICS(GROUP_UMI.out.grouped_bam_file)
 
     // Call consensus reads.
     CALL_CONSENSUS(GROUP_UMI.out.grouped_bam_file)
@@ -248,17 +269,18 @@ workflow umi_mapping {
     INDEX(INDELQUAL.out.bam_file)
 
     // Metrics after consensus calling
-    FLAGSTAT(INDELQUAL.out.bam_file, "")
     MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
 
     VALIDATE(INDELQUAL.out.bam_file)
     
     MULTIQC(FASTQC.out.fastqc_zip.mix(
         RAW_DEPTH.out.region_dist,
-        RAW_DUP.out.metrics_file,
-        RAW_FLAGSTAT.out.flagstat,
+        ALIGNMENT_METRICS.out.metrics_file,
+        GC_METRICS.out.metrics_file,
+        GC_METRICS.out.summary_file,
+        INSERT_SIZE_METRICS.out.metrics_file,
+        DUPLICATE_METRICS.out.metrics_file,
         MOSDEPTH.out.region_dist,
-        FLAGSTAT.out.flagstat,
         MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
