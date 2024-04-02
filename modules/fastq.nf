@@ -17,7 +17,8 @@ process FASTQ {
     gatk SamToFastq                 \
         I=${bam_file}               \
         F=${sample_id}_raw.fq.gz     \
-        INTERLEAVE=true
+        INTERLEAVE=true            \
+        TMP_DIR=.
     """
     
     stub:

@@ -222,7 +222,7 @@ workflow umi_mapping {
     // This is done to keep the UMI tags in the aligned bam file. (removed by bam->fastq conversion) 
     //
     // Join bam channels by sample_id
-    ALIGNMENT.out.raw_bam_file
+    ALIGNMENT_UMI.out.raw_bam_file
         .join(EXTRACT_UMI.out.umi_extracted_ubam_file)
         .set { bam_files_joined }
     // Merge files
@@ -341,7 +341,7 @@ workflow calling {
 */
 
 workflow {
-    mapping(pooltable_ch)
+    umi_mapping(pooltable_ch)
 }
 
 workflow all {

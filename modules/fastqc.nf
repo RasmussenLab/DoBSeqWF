@@ -6,6 +6,7 @@ process FASTQC {
     // time = { 4.hour * task.attempt }
 
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_raw_fastqc.html", mode:'copy'
+    publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_raw_fastqc.zip", mode:'copy'
 
     input:
     tuple val(sample_id), path(reads)

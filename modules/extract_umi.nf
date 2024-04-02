@@ -20,7 +20,7 @@ process EXTRACT_UMI {
 
     script:
     """
-    fgbio --compression 1 --async-io ExtractUmisFromBam                \
+    ${params.fgbio} --tmp-dir=. --compression 1 --async-io ExtractUmisFromBam                \
         --input=${bam_file}                 \
         --output=${sample_id}.ubam           \
         --read-structure=5M2S+T 5M2S+T      \

@@ -15,7 +15,8 @@ process MERGE_CONSENSUS {
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     """
-    gatk MergeBamAlignment              \
+    gatk --java-options -Xmx20g MergeBamAlignment              \
+        TMP_DIR=.                       \
         UNMAPPED=${ubam_file}           \
         ALIGNED=${bam_file}             \
         O=${sample_id}.bam              \

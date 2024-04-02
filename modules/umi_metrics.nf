@@ -34,7 +34,7 @@ process UMI_METRICS {
 
     script:
     """
-    fgbio CollectDuplexSeqMetrics   \
+    ${params.fgbio} --tmp-dir=. --compression 1 --async-io CollectDuplexSeqMetrics   \
         --input=${bam_file}         \
         --output="${sample_id}"
     """

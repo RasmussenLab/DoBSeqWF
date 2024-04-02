@@ -19,9 +19,11 @@ process MARKDUPLICATES {
     script:
     def log_filename = log_suffix == "" ? "${sample_id}.dupMetric.log" : "${sample_id}_${log_suffix}.dupMetric.log"
     """
-    gatk MarkDuplicates                     \
-        --I ${bam_file}                     \
-        --M ${log_filename}                 \
+    gatk --java-options -Xmx16g MarkDuplicates  \
+		--TAGGING_POLICY OpticalOnly		    \
+	    --TMP_DIR .                             \
+        --I ${bam_file}                         \
+        --M ${log_filename}                     \
         --O ${sample_id}.marked.bam
     """
     

@@ -25,9 +25,9 @@ process ALIGNMENT {
         -t ${task.cpus-10}                                              \
         -K 100000000                                                    \
         -v 2                                                            \
-        -p                                                             \
         ${db}                                                           \
-        ${reads}                                                     \
+        ${reads[0]}                                                     \
+        ${reads[1]}                                                     \
         2> >(tee -a "${sample_id}.log" >&2)                             \
             | samtools sort -@ 10 -o "${sample_id}.bam" -
     """

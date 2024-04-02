@@ -13,7 +13,7 @@ process CALL_CONSENSUS {
 
     script:
     """
-    fgbio --compression 1 --async-io CallDuplexConsensusReads          \
+    ${params.fgbio} --tmp-dir=. --compression 1 --async-io CallDuplexConsensusReads          \
         --input=${bam_file}                 \
         --output="${sample_id}.ubam"        \
         --error-rate-pre-umi=45             \

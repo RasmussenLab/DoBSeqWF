@@ -15,13 +15,14 @@ process UBAM {
     script:
     """
     gatk FastqToSam             \
-        O="${sample_id}.ubam"    \
+        O="${sample_id}.ubam"   \
         F1=${reads[0]}          \
         F2=${reads[1]}          \
         SM=${sample_id}         \
         LB=Library1             \
         PU=Unit1                \
-        PL=Illumina
+        PL=Illumina             \
+        TMP_DIR=.
     """
     
     stub:
