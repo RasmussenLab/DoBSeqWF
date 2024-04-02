@@ -35,6 +35,7 @@ include { VALIDATE                  } from './modules/validate'
 // UMI Mapping
 include { DOWNSAMPLE                } from './modules/downsample'
 include { UBAM                      } from './modules/ubam'
+include { ALIGNMENT_UMI             } from './modules/alignment_umi'
 include { EXTRACT_UMI               } from './modules/extract_umi'
 include { FASTQ                     } from './modules/fastq'
 include { MERGEBAM                  } from './modules/mergebam'
@@ -49,10 +50,10 @@ include { MOSDEPTH as RAW_DEPTH     } from './modules/mosdepth'
 include { GROUP_UMI                 } from './modules/group_umi'
 include { UMI_METRICS               } from './modules/umi_metrics'
 include { CALL_CONSENSUS            } from './modules/call_consensus'
-include { ALIGNMENT as CONS_ALIGN   } from './modules/alignment'
+include { ALIGNMENT_UMI as CONS_ALIGN   } from './modules/alignment_umi'
 include { FASTQ as CONS_FASTQ       } from './modules/fastq'
 include { MERGE_CONSENSUS           } from './modules/merge_consensus'
-include { HS_METRICS as CONS_METRIC  } from './modules/hs_metrics'
+include { HS_METRICS as CONS_METRIC } from './modules/hs_metrics'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -98,6 +99,7 @@ if (params.step == 'calling') {
 read_ch = Channel.empty()
 fastqc_ch = Channel.empty()
 mosdepth_ch = Channel.empty()
+rawdepth_ch = Channel.empty()
 flagstat_ch = Channel.empty()
 lofreq_ch = Channel.empty()
 bam_file_ch = Channel.empty()
@@ -125,13 +127,15 @@ workflow mapping {
     pooltable
     
     main:
+
+    if (params.downsample > 0) {
+        read_ch = DOWNSAMPLE(pooltable, params.downsample)
+    } else {
+        read_ch = pooltable
+    }
+
     if (params.doFastqc) {
-        // Single file channel conversion - run FastQC on single files.
-        pooltable_ch
-            .flatMap { pool_id, reads ->
-                return [tuple(pool_id, reads[0], 1), tuple(pool_id, reads[1], 2)]}
-            .set { sep_read_ch }
-        FASTQC(sep_read_ch)
+        FASTQC(pooltable)
         fastqc_ch = FASTQC.out.fastqc_zip
     }
 
@@ -142,10 +146,14 @@ workflow mapping {
         flagstat_ch = FLAGSTAT.out.flagstat
     }
 
+    if (params.doMosdepth) {
+        RAW_INDEX(ALIGNMENT.out.raw_bam_file)
+        RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
+        rawdepth_ch = RAW_DEPTH.out.region_dist
+    }
+
 	ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
-
-    MARKDUPLICATES(ADDREADGROUP.out.bam_file)
-
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file, "raw")
     CLEAN(MARKDUPLICATES.out.marked_bam_file)
 
     // Add indel quality, ie. BI/BD tags
@@ -157,7 +165,7 @@ workflow mapping {
     INDEX(INDELQUAL.out.bam_file)
 
     if (params.doMosdepth) {
-        MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch)
+        MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
         mosdepth_ch = MOSDEPTH.out.region_dist
     }
 
@@ -165,7 +173,10 @@ workflow mapping {
         VALIDATE(INDELQUAL.out.bam_file)
     }
 
-    MULTIQC(fastqc_ch.mix(mosdepth_ch, flagstat_ch, MARKDUPLICATES.out.metrics_file).collect())
+    MULTIQC(fastqc_ch.mix(
+        rawdepth_ch,
+        mosdepth_ch,
+        MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
     bam_file_w_index = INDEX.out.bam_file_w_index
@@ -173,7 +184,7 @@ workflow mapping {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UMI AWARE MAPPING SUB-WORKFLOW
+    UMI AWARE MAPPING SUB-WORKFLOW - FULL QC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -184,9 +195,9 @@ workflow umi_mapping {
     main:
 
     if (params.downsample > 0) {
-        read_ch = DOWNSAMPLE(pooltable_ch, params.downsample)
+        read_ch = DOWNSAMPLE(pooltable, params.downsample)
     } else {
-        read_ch = pooltable_ch
+        read_ch = pooltable
     }
 
     // Convert FastQ to unaligned bam file
@@ -205,7 +216,7 @@ workflow umi_mapping {
     fastqc_ch = FASTQC.out.fastqc_zip
 
     // Align UMI extracted FastQ files
-    ALIGNMENT(FASTQ.out.fastq_files, reference_genome_ch)
+    ALIGNMENT_UMI(FASTQ.out.fastq_files, reference_genome_ch)
 
     // Merge aligned bam with unaligned UMI tagged bam.
     // This is done to keep the UMI tags in the aligned bam file. (removed by bam->fastq conversion) 
@@ -285,7 +296,7 @@ workflow umi_mapping {
 
     emit:
     bam_file_w_index = INDEX.out.bam_file_w_index
-}   
+}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -330,7 +341,7 @@ workflow calling {
 */
 
 workflow {
-    umi_mapping(pooltable_ch)
+    mapping(pooltable_ch)
 }
 
 workflow all {

@@ -22,8 +22,9 @@ process CLEAN {
         -o "${sample_id}.clean.bam"     \
         ${bam_file}
 
-    ## -F 1024: exclude read that fails platform/vendor quality checks
-    ## -F 512: exclude read that is PCR or optical duplicate
+    ## -F Filter based on the following flags:
+    ## -F 1024: exclude read that are PCR or optical duplicate
+    ## -F 512: exclude read that fails platform/vendor quality checks
     ## -F 2048: exclude supplementary alignments
     ## -q 20: exclude reads with mapping quality less than 20
     ## -b: output in BAM format

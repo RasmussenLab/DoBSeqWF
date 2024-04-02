@@ -6,3 +6,4 @@ channels:
 dependencies:
   - samtools=1.18
   - bwa-mem2=2.2.1
+  - gatk4=4.3.0.0
