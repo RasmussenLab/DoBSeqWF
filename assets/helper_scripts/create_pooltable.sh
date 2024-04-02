@@ -15,13 +15,13 @@ echo "Creating pooltabletable $(date -Is)"
 echo "Searching for files in $*"
 
 # Get all forward read files
-find $@ -name '*_1.fq.gz' -print > ${TEMP1}
+find $@ -name '*_R1_001.fastq.gz' -print > ${TEMP1}
 
 # Convert to absolute paths
 awk '{print $0}' ${TEMP1} | xargs realpath > ${TEMP1}.abs
 mv ${TEMP1}.abs ${TEMP1}
 
-echo "Found $(cat ${TEMP1} | wc -l) files ending in _1.fq.gz"
+echo "Found $(cat ${TEMP1} | wc -l) files ending in _R1_001.fastq.gz"
 
 # Then remove duplicated filenames (basenames). Also in case of different subdirectories.
 paste ${TEMP1}  <(cat ${TEMP1} | xargs -n 1 basename)  \
@@ -33,9 +33,9 @@ paste ${TEMP1}  <(cat ${TEMP1} | xargs -n 1 basename)  \
 echo "  of which $(cat ${TEMP2} | wc -l) files were not duplicates and thus retained"
 
 # Create full pooltable (poolID, fq1, fq2) based on these unique filenames
-paste <(awk -F'/' '{print $NF}' ${TEMP2} | sed 's/_1.fq.gz//') \
+paste <(awk -F'/' '{print $NF}' ${TEMP2} | sed 's/_R1_001.fastq.gz//') \
     ${TEMP2} \
-    <(sed 's/_1.fq.gz/_2.fq.gz/' ${TEMP2}) \
+    <(sed 's/_R1_001.fastq.gz/_R2_001.fastq.gz/' ${TEMP2}) \
     > ${OUTFILE}
 
 # Clean up temporary files

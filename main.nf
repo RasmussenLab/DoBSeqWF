@@ -23,6 +23,7 @@ include { FASTQC                    } from './modules/fastqc'
 include { MOSDEPTH                  } from './modules/mosdepth'
 include { FLAGSTAT                  } from './modules/flagstat'
 include { ALIGNMENT                 } from './modules/alignment'
+include { MARKDUPLICATES_FAST       } from './modules/markduplicates_fast'
 include { MARKDUPLICATES            } from './modules/markduplicates'
 include { CLEAN                     } from './modules/clean'
 include { ADDREADGROUP              } from './modules/addreadgroup'
@@ -153,8 +154,8 @@ workflow mapping {
     }
 
 	ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
-    MARKDUPLICATES(ADDREADGROUP.out.bam_file, "raw")
-    CLEAN(MARKDUPLICATES.out.marked_bam_file)
+    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
+    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
 
     // Add indel quality, ie. BI/BD tags
     INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
@@ -176,7 +177,7 @@ workflow mapping {
     MULTIQC(fastqc_ch.mix(
         rawdepth_ch,
         mosdepth_ch,
-        MARKDUPLICATES.out.metrics_file).collect())
+        MARKDUPLICATES_FAST.out.metrics_file).collect())
 
     emit:
     bam_file_w_index = INDEX.out.bam_file_w_index
@@ -341,7 +342,7 @@ workflow calling {
 */
 
 workflow {
-    umi_mapping(pooltable_ch)
+    mapping(pooltable_ch)
 }
 
 workflow all {
