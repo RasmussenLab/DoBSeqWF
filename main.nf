@@ -244,10 +244,9 @@ workflow mapping_qc {
     bam_file_w_index = INDEX.out.bam_file_w_index
 }
 
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UMI AWARE MAPPING SUB-WORKFLOW - FULL QC
+    UMI AWARE MAPPING SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -273,10 +272,105 @@ workflow umi_mapping {
     FASTQ(EXTRACT_UMI.out.umi_extracted_ubam_file)
 
     // Run FastQC on UMI extracted FastQ files
+    FASTQC(FASTQ.out.fastq_files)
+
+    // Align UMI extracted FastQ files
+    ALIGNMENT_UMI(FASTQ.out.fastq_files, reference_genome_ch)
+
+    // Merge aligned bam with unaligned UMI tagged bam.
+    // This is done to keep the UMI tags in the aligned bam file. (removed by bam->fastq conversion) 
+    //
+    // Join bam channels by sample_id
+    ALIGNMENT_UMI.out.raw_bam_file
+        .join(EXTRACT_UMI.out.umi_extracted_ubam_file)
+        .set { bam_files_joined }
+    // Merge files
+    MERGEBAM(bam_files_joined, reference_genome_ch)
+
+    RAW_INDEX(MERGEBAM.out.bam_file)
+    RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
+
+    MARKDUPLICATES_FAST(MERGEBAM.out.bam_file, "raw")
+
+    // Group reads by UMI
+    GROUP_UMI(MERGEBAM.out.bam_file)
+
+    // Call consensus reads.
+    CALL_CONSENSUS(GROUP_UMI.out.grouped_bam_file)
+    
+    // Convert consensus unaligned bam to FastQ
+    CONS_FASTQ(CALL_CONSENSUS.out.consensus_ubam_file)
+
+    // Align consensus
+    CONS_ALIGN(CONS_FASTQ.out.fastq_files, reference_genome_ch)
+
+    // Merge consenus ubam and consensus bam
+    CONS_ALIGN.out.raw_bam_file
+        .join(CALL_CONSENSUS.out.consensus_ubam_file)
+        .set { consensus_bam_files_joined }
+    MERGE_CONSENSUS(consensus_bam_files_joined, reference_genome_ch)
+
+    // Add read group to final bam file for GATK compatibility.
+    ADDREADGROUP(MERGE_CONSENSUS.out.bam_file)
+
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file, "")
+
+    CLEAN(MARKDUPLICATES.out.marked_bam_file)
+
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
+
+    CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
+    CRAMTABLE(CRAM.out.cram_info.collect())
+
+    INDEX(INDELQUAL.out.bam_file)
+
+    // Metrics after consensus calling
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
+
+    VALIDATE(INDELQUAL.out.bam_file)
+    
+    MULTIQC(FASTQC.out.fastqc_zip.mix(
+        RAW_DEPTH.out.region_dist,
+        GROUP_UMI.out.family_metrics,
+        MOSDEPTH.out.region_dist,
+        MARKDUPLICATES.out.metrics_file).collect())
+
+    emit:
+    bam_file_w_index = INDEX.out.bam_file_w_index
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UMI AWARE MAPPING SUB-WORKFLOW - FULL QC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow umi_mapping_qc {
+    take:
+    pooltable
+    
+    main:
+
+    if (params.downsample > 0) {
+        read_ch = DOWNSAMPLE(pooltable, params.downsample)
+    } else {
+        read_ch = pooltable
+    }
+
+    // Convert FastQ to unaligned bam file
+    UBAM(read_ch)
+
+    // Extract UMI from unaligned bam file
+    EXTRACT_UMI(UBAM.out.unaligned_bam_file)
+
+    // Convert unaligned bam file to fastq
+    FASTQ(EXTRACT_UMI.out.umi_extracted_ubam_file)
+
+    // Run FastQC on UMI extracted FastQ files
 
     // Single file channel conversion - run FastQC on single files.
     FASTQC(FASTQ.out.fastq_files)
-    fastqc_ch = FASTQC.out.fastqc_zip
 
     // Align UMI extracted FastQ files
     ALIGNMENT_UMI(FASTQ.out.fastq_files, reference_genome_ch)
@@ -407,7 +501,7 @@ workflow calling {
 */
 
 workflow {
-    mapping(pooltable_ch)
+    umi_mapping(pooltable_ch)
 }
 
 workflow all {
