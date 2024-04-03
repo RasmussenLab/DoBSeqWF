@@ -11,7 +11,7 @@ process HS_METRICS {
     input:
     tuple val(sample_id), path(bam_file)
     path(reference)
-    path(dict_file)
+    path(bedfile)
     val log_suffix
 
     output:
@@ -21,13 +21,19 @@ process HS_METRICS {
     def db = file(params.reference_genome).getName() + ".fna"
     def log_filename = log_suffix == "" ? "${sample_id}.hs.txt" : "${sample_id}_${log_suffix}.hs.txt"
     """
+    gatk BedToIntervalList \
+				 I=${bedfile} \
+				 O="target_region.dict" \
+				 SD=${db}
+
+    
     gatk CollectHsMetrics                   \
         -I ${bam_file}                      \
         -O ${log_filename}                  \
         -R ${db}                            \
-        --BAIT_INTERVALS ${dict_file}        \
-        --TARGET_INTERVALS ${dict_file}      \
-        --PER_TARGET_COVERAGE ${dict_file}
+        --BAIT_INTERVALS "target_region.dict"        \
+        --TARGET_INTERVALS "target_region.dict"      \
+        --PER_TARGET_COVERAGE "target_region.dict"
     
     ## Change to correct files! Original command:
     ## --BAIT_INTERVALS {probes_intervals} \

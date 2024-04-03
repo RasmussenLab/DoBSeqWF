@@ -113,9 +113,8 @@ bam_file_ch = Channel.empty()
 
 reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExists: true).collect()
 
-// Target regions bedfile and gatk dictfile
+// Target regions bedfile
 bedfile_ch = Channel.fromPath(params.bedfile).collect()
-dictfile_ch = Channel.fromPath(params.dictfile).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,6 +184,69 @@ workflow mapping {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MAPPING SUB-WORKFLOW - FULL QC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow mapping_qc {
+    take:
+    pooltable
+    
+    main:
+
+    if (params.downsample > 0) {
+        read_ch = DOWNSAMPLE(pooltable, params.downsample)
+    } else {
+        read_ch = pooltable
+    }
+
+    FASTQC(pooltable)
+
+    ALIGNMENT(pooltable, reference_genome_ch)
+    RAW_INDEX(ALIGNMENT.out.raw_bam_file)
+    
+    RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
+    HS_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome_ch, bedfile_ch, "raw")
+    ALIGNMENT_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome_ch, "raw")
+    GC_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome_ch, "raw")
+    INSERT_SIZE_METRICS(ALIGNMENT.out.raw_bam_file, "raw")
+    DUPLICATE_METRICS(ALIGNMENT.out.raw_bam_file, "raw")
+    ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
+    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
+    
+    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
+
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
+
+    CRAM(INDELQUAL.out.bam_file, reference_genome_ch)
+    CRAMTABLE(CRAM.out.cram_info.collect())
+
+    INDEX(INDELQUAL.out.bam_file)
+
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
+
+    if (!params.testing) {
+        VALIDATE(INDELQUAL.out.bam_file)
+    }
+
+    MULTIQC(FASTQC.out.fastqc_zip.mix(
+        RAW_DEPTH.out.region_dist,
+        ALIGNMENT_METRICS.out.metrics_file,
+        HS_METRICS.out.metrics_file,
+        GC_METRICS.out.metrics_file,
+        GC_METRICS.out.summary_file,
+        INSERT_SIZE_METRICS.out.metrics_file,
+        MOSDEPTH.out.region_dist,
+        MARKDUPLICATES_FAST.out.metrics_file).collect())
+
+    emit:
+    bam_file_w_index = INDEX.out.bam_file_w_index
+}
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     UMI AWARE MAPPING SUB-WORKFLOW - FULL QC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -229,8 +291,8 @@ workflow umi_mapping {
     // Merge files
     MERGEBAM(bam_files_joined, reference_genome_ch)
     
-    // Collect Hs metrics - Todo
-    // HS_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, dictfile_ch)
+    // Collect Hs metrics
+    HS_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, bedfile_ch, "raw")
 
     // Metrics before consensus calling
     ALIGNMENT_METRICS(MERGEBAM.out.bam_file, reference_genome_ch, "raw")
@@ -266,7 +328,7 @@ workflow umi_mapping {
     ADDREADGROUP(MERGE_CONSENSUS.out.bam_file)
 
     // Repeat HS metrics on final bam file
-    // CONS_METRIC(ADDREADGROUP.out.bam_file, reference_genome_ch, bedfile_ch)
+    CONS_METRIC(ADDREADGROUP.out.bam_file, reference_genome_ch, bedfile_ch, "")
 
     MARKDUPLICATES(ADDREADGROUP.out.bam_file, "")
 
@@ -288,10 +350,13 @@ workflow umi_mapping {
     MULTIQC(FASTQC.out.fastqc_zip.mix(
         RAW_DEPTH.out.region_dist,
         ALIGNMENT_METRICS.out.metrics_file,
+        HS_METRICS.out.metrics_file,
         GC_METRICS.out.metrics_file,
         GC_METRICS.out.summary_file,
         INSERT_SIZE_METRICS.out.metrics_file,
+        GROUP_UMI.out.family_metrics,
         DUPLICATE_METRICS.out.metrics_file,
+        CONS_METRIC.out.metrics_file,
         MOSDEPTH.out.region_dist,
         MARKDUPLICATES.out.metrics_file).collect())
 

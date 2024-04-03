@@ -1,6 +1,10 @@
 process DOWNSAMPLE {
     tag "$sample_id"
     // Downsample FastQ file to number of million reads.
+    // Twist kit target region: 
+    // 150x = 2.5M reads
+    // 9600x = 167M reads
+    // Approximately 40% is on target - so cap set at 400M reads.
     
     // cpus = 8
     // memory = { 32.GB * task.attempt }

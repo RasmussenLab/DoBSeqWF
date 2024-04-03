@@ -13,7 +13,7 @@ process GROUP_UMI {
 
     output:
     tuple val(sample_id), path("${sample_id}.bam"), emit: grouped_bam_file
-    path "${sample_id}.family_size_histogram.txt"
+    path "${sample_id}.family_size_histogram.txt", emit: family_metrics
 
     script:
     """

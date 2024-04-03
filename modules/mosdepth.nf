@@ -9,6 +9,7 @@ process MOSDEPTH {
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.regions.bed.gz", mode:'copy'
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.mosdepth.global.dist.txt", mode:'copy'
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.mosdepth.region.dist.txt", mode:'copy'
+    publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.mosdepth.summary.txt", mode:'copy'
 
     input:
     tuple val(sample_id), path(bam), path(bai)
@@ -20,6 +21,7 @@ process MOSDEPTH {
     path "${sample_id}*.regions.bed.gz", emit: region_depth
     path "${sample_id}*.mosdepth.global.dist.txt", emit: global_dist
     path "${sample_id}*.mosdepth.region.dist.txt", emit: region_dist
+    path "${sample_id}*.mosdepth.summary.txt", emit: summary
 
     script:
     def log_filename = log_suffix == "" ? "${sample_id}" : "${sample_id}_${log_suffix}"
@@ -38,5 +40,6 @@ process MOSDEPTH {
     touch ${log_filename}.regions.bed.gz
     touch ${log_filename}.mosdepth.global.dist.txt
     touch ${log_filename}.mosdepth.region.dist.txt
+    touch ${log_filename}.mosdepth.summary.txt
     """
 }
