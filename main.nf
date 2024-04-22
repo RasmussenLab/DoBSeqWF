@@ -135,11 +135,11 @@ workflow mapping {
     }
 
     if (params.doFastqc) {
-        FASTQC(pooltable)
+        FASTQC(read_ch)
         fastqc_ch = FASTQC.out.fastqc_zip
     }
 
-    ALIGNMENT(pooltable, reference_genome_ch)
+    ALIGNMENT(read_ch, reference_genome_ch)
 
     if (params.doFlagstat) {
         FLAGSTAT(ALIGNMENT.out.raw_bam_file)
@@ -200,9 +200,9 @@ workflow mapping_qc {
         read_ch = pooltable
     }
 
-    FASTQC(pooltable)
+    FASTQC(read_ch)
 
-    ALIGNMENT(pooltable, reference_genome_ch)
+    ALIGNMENT(read_ch, reference_genome_ch)
     RAW_INDEX(ALIGNMENT.out.raw_bam_file)
     
     RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile_ch, "raw")
@@ -334,6 +334,7 @@ workflow umi_mapping {
         RAW_DEPTH.out.region_dist,
         GROUP_UMI.out.family_metrics,
         MOSDEPTH.out.region_dist,
+        MARKDUPLICATES_FAST.out.metrics_file,
         MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
@@ -500,11 +501,11 @@ workflow calling {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow {
+workflow umi {
     umi_mapping(pooltable_ch)
 }
 
-workflow all {
+workflow {
     if (params.step != 'calling') {
         bam_file_w_index_ch = mapping(pooltable_ch)
     } else {
