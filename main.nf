@@ -73,6 +73,13 @@ include { TEST                      } from './modules/test'
 // QC
 include { MULTIQC                   } from './modules/multiqc'
 
+// Truth calling
+include { SUBSET                    } from './modules/subset'
+include { BQSR                      } from './modules/bqsr'
+include { APPLY_BQSR                } from './modules/apply_bqsr'
+include { HC_TRUTH                  } from './modules/haplotypecaller_truth'
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     INPUT CHANNELS
@@ -115,6 +122,9 @@ reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExi
 
 // Target regions bedfile
 bedfile_ch = Channel.fromPath(params.bedfile).collect()
+
+// Target regions extraction from truth wgs bam file
+bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -495,6 +505,56 @@ workflow calling {
     pinned_variants = PINNING.out.pinned_variants
 }
 
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CALL TRUTHSET SUBSET SUB-WORKFLOW
+        Subsamples alignment to specific region(s) and calls variants.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow call_truth {
+    take:
+    cramtable
+
+    main:
+
+    mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
+    g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
+
+    // Subset alignment
+    SUBSET(cramtable, reference_genome_ch, bedfile_bam_extraction_ch)
+
+	ADDREADGROUP(SUBSET.out.bam_file)
+    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
+    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
+
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
+
+    // Base recalibration
+    BQSR(INDELQUAL.out.bam_file, reference_genome_ch, mills_ch, g1000_ch)
+    
+    // Apply recalibration
+    APPLY_BQSR(BQSR.out.bqsr_file, reference_genome_ch)
+
+    // Index
+    INDEX(APPLY_BQSR.out.corrected_bam_file)
+
+    // Call variants LoFreq
+
+    LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+
+    // Call variants GATK
+
+    HC_TRUTH(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
+
+    MULTIQC(MOSDEPTH.out.region_dist.mix(
+        MARKDUPLICATES_FAST.out.metrics_file).collect())
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     MAIN WORKFLOW
@@ -506,6 +566,10 @@ workflow umi {
 }
 
 workflow {
+    call_truth(cramtable_ch)
+}
+
+workflow standard {
     if (params.step != 'calling') {
         bam_file_w_index_ch = mapping(pooltable_ch)
     } else {
