@@ -21,7 +21,8 @@ process HC_TRUTH {
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     """
-    gatk HaplotypeCaller                                \
+    gatk --java-options "-Xmx8g -XX:-UsePerfData"       \
+        HaplotypeCaller                                 \
         -R ${db}                                        \
         -I ${bam_file}                                  \
         -L ${bedfile}                                   \

@@ -61,8 +61,11 @@ include { BAM                       } from './modules/bam'
 
 // Variant calling
 include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
+include { HAPLOTYPECALLER_JOINT     } from './modules/haplotypecaller_joint'
 include { LOFREQ                    } from './modules/lofreq'
 include { FILTER                    } from './modules/filter'
+include { GENOMICSDB                } from './modules/genomicsdb'
+include { GENOTYPEGVCF              } from './modules/genotypegvcf'
 
 // Variant pinning
 include { PINNING                   } from './modules/pinning'
@@ -78,6 +81,7 @@ include { SUBSET                    } from './modules/subset'
 include { BQSR                      } from './modules/bqsr'
 include { APPLY_BQSR                } from './modules/apply_bqsr'
 include { HC_TRUTH                  } from './modules/haplotypecaller_truth'
+include { HC_TRUTH_JOINT            } from './modules/haplotypecaller_truth_joint'
 
 
 /*
@@ -505,6 +509,28 @@ workflow calling {
     pinned_variants = PINNING.out.pinned_variants
 }
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    JOINT CALLING SUB-WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow call_joint {
+    take:
+    bam_file_w_index
+
+    main:
+
+    // GATK
+    HAPLOTYPECALLER_JOINT(bam_file_w_index, reference_genome_ch, bedfile_ch)
+
+    GENOMICSDB(HAPLOTYPECALLER_JOINT.out.gvcf_file.collect(),
+               HAPLOTYPECALLER_JOINT.out.gvcf_index.collect(),
+               bedfile_ch)
+    
+    GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome_ch)
+}
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -557,6 +583,57 @@ workflow call_truth {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    JOINT CALL TRUTHSET SUBSET SUB-WORKFLOW
+        Subsamples alignment to specific region(s) and calls variants.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow call_joint_truth {
+    take:
+    cramtable
+
+    main:
+
+    mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
+    g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
+
+    // Subset alignment
+    SUBSET(cramtable, reference_genome_ch, bedfile_bam_extraction_ch)
+
+	ADDREADGROUP(SUBSET.out.bam_file)
+    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
+    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
+
+    // Add indel quality, ie. BI/BD tags
+    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
+
+    // Base recalibration
+    BQSR(INDELQUAL.out.bam_file, reference_genome_ch, mills_ch, g1000_ch)
+    
+    // Apply recalibration
+    APPLY_BQSR(BQSR.out.bqsr_file, reference_genome_ch)
+
+    // Index
+    INDEX(APPLY_BQSR.out.corrected_bam_file)
+
+    // Call variants GATK
+
+    HC_TRUTH_JOINT(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+
+    GENOMICSDB(HC_TRUTH_JOINT.out.gvcf_file.collect(),
+               HC_TRUTH_JOINT.out.gvcf_index.collect(),
+               bedfile_ch)
+    
+    GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome_ch)
+    
+    MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
+
+    MULTIQC(MOSDEPTH.out.region_dist.mix(
+            MARKDUPLICATES_FAST.out.metrics_file).collect())
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -565,8 +642,18 @@ workflow umi {
     umi_mapping(pooltable_ch)
 }
 
-workflow {
+workflow truth {
     call_truth(cramtable_ch)
+}
+
+workflow truth_joint {
+    call_joint_truth(cramtable_ch)
+}
+
+workflow {
+    BAM(cramtable_ch, reference_genome_ch)
+    bam_file_w_index_ch = INDEX(BAM.out.bam_file)
+    call_joint(bam_file_w_index_ch)
 }
 
 workflow standard {
