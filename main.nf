@@ -567,12 +567,13 @@ workflow call_truth {
     // Index
     INDEX(APPLY_BQSR.out.corrected_bam_file)
 
-    // Call variants LoFreq
+    // Call variants DeepVariant
+    DEEPVARIANT(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
+    // Call variants LoFreq
     LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     // Call variants GATK
-
     HC_TRUTH(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     MOSDEPTH(INDEX.out.bam_file_w_index, bedfile_ch, "")
@@ -604,11 +605,8 @@ workflow call_joint_truth {
     MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
     CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
 
-    // Add indel quality, ie. BI/BD tags
-    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
-
     // Base recalibration
-    BQSR(INDELQUAL.out.bam_file, reference_genome_ch, mills_ch, g1000_ch)
+    BQSR(CLEAN.out.clean_bam_file, reference_genome_ch, mills_ch, g1000_ch)
     
     // Apply recalibration
     APPLY_BQSR(BQSR.out.bqsr_file, reference_genome_ch)
