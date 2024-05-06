@@ -63,6 +63,7 @@ include { BAM                       } from './modules/bam'
 include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
 include { HAPLOTYPECALLER_JOINT     } from './modules/haplotypecaller_joint'
 include { LOFREQ                    } from './modules/lofreq'
+include { DEEPVARIANT               } from './modules/deepvariant'
 include { FILTER                    } from './modules/filter'
 include { GENOMICSDB                } from './modules/genomicsdb'
 include { GENOTYPEGVCF              } from './modules/genotypegvcf'
@@ -568,7 +569,7 @@ workflow call_truth {
     INDEX(APPLY_BQSR.out.corrected_bam_file)
 
     // Call variants DeepVariant
-    DEEPVARIANT(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
+    //DEEPVARIANT(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
 
     // Call variants LoFreq
     LOFREQ(INDEX.out.bam_file_w_index, reference_genome_ch, bedfile_ch)
@@ -640,7 +641,7 @@ workflow umi {
     umi_mapping(pooltable_ch)
 }
 
-workflow truth {
+workflow {
     call_truth(cramtable_ch)
 }
 
@@ -648,7 +649,7 @@ workflow truth_joint {
     call_joint_truth(cramtable_ch)
 }
 
-workflow {
+workflow standard_joint {
     BAM(cramtable_ch, reference_genome_ch)
     bam_file_w_index_ch = INDEX(BAM.out.bam_file)
     call_joint(bam_file_w_index_ch)
