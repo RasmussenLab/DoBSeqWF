@@ -64,6 +64,8 @@ include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
 include { HAPLOTYPECALLER_JOINT     } from './modules/haplotypecaller_joint'
 include { LOFREQ                    } from './modules/lofreq'
 include { DEEPVARIANT               } from './modules/deepvariant'
+include { CRISP                     } from './modules/crisp'
+include { OCTOPUS                   } from './modules/octopus'
 include { FILTER                    } from './modules/filter'
 include { GENOMICSDB                } from './modules/genomicsdb'
 include { GENOTYPEGVCF              } from './modules/genotypegvcf'
@@ -127,9 +129,6 @@ reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExi
 
 // Target regions bedfile
 bedfile_ch = Channel.fromPath(params.bedfile).collect()
-
-// Target regions extraction from truth wgs bam file
-bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -512,6 +511,29 @@ workflow calling {
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ALTERNATIVE POOL CALL SUB-WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow alternative_calling {
+    take:
+    bam_file_w_index
+
+    main:
+
+    bam_file_w_index
+        .map { pool_id, bam_file, index -> bam_file }
+        .set { bam_file_ch }
+
+    // CRISP
+    CRISP(bam_file_ch.collect(),reference_genome_ch, bedfile_ch)
+
+    // Octopus
+    OCTOPUS(bam_file_w_index, reference_genome_ch, bedfile_ch)
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     JOINT CALLING SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -545,6 +567,9 @@ workflow call_truth {
     cramtable
 
     main:
+
+    // Target regions extraction from truth wgs bam file
+    bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
 
     mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
     g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
@@ -595,6 +620,9 @@ workflow call_joint_truth {
     cramtable
 
     main:
+
+    // Target regions extraction from truth wgs bam file
+    bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
 
     mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
     g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
