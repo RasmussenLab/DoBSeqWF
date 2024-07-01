@@ -22,7 +22,7 @@ git clone https://github.com/madscort/DoBSeqWF.git .
 git clone /ngc/projects/icope_staging_r/git/predisposed/.git .
 ```
 
-3. Run pipeline without input data:
+3. Run pipeline without any data (dry-run):
 
 ```Bash
 nextflow run main.nf -profile (standard/esrum/ngc),test -stub

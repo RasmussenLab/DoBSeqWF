@@ -5,26 +5,29 @@ process FASTQC {
     // memory = { 10.GB * task.attempt }
     // time = { 4.hour * task.attempt }
 
-    publishDir "${params.outputDir}/log/fastqc/", pattern: "${read.simpleName}_fastqc.html", mode:'copy'
+    publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_raw_fastqc.html", mode:'copy'
+    publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_raw_fastqc.zip", mode:'copy'
 
     input:
-    tuple val(sample_id), path(read), val(read_number)
+    tuple val(sample_id), path(reads)
 
     output:
-    path "${read.simpleName}_fastqc.html", emit: fastqc_html
-    path "${read.simpleName}_fastqc.zip", emit: fastqc_zip
+    path "${sample_id}_raw_fastqc.html", emit: fastqc_html
+    path "${sample_id}_raw_fastqc.zip", emit: fastqc_zip
 
     script:
     """
-    fastqc                                  \
-        --threads ${task.cpus}              \
-        --quiet                             \
-        ${read}
+    gunzip -c ${reads}                          \
+        | fastqc                                \
+            --threads ${task.cpus}              \
+            --quiet                             \
+            --noextract                         \
+            stdin:"${sample_id}_raw"
     """
     
     stub:
     """
-    touch "${read.simpleName}_fastqc.html"
-    touch "${read.simpleName}_fastqc.zip"
+    touch "${sample_id}_raw_fastqc.html"
+    touch "${sample_id}_raw_fastqc.zip"
     """
 }

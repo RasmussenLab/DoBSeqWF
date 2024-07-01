@@ -1,0 +1,3 @@
+chrom	start	end	length	name	%gc	mean_coverage	normalized_coverage	min_normalized_coverage	max_normalized_coverage	min_coverage	max_coverage	pct_0x	read_count
+small_ref	2	710	709	.	0.25952	0	?	?	?	0	0	1	0
+small_ref	721	1300	580	.	0.312069	0	?	?	?	0	0	1	0
