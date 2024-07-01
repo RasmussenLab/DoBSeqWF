@@ -12,6 +12,7 @@ process MULTIQC {
 
     output:
     path "multiqc_report.html", emit: multiqc_html
+    path "multiqc_data", emit: multiqc_data
 
     script:
     """
@@ -21,5 +22,6 @@ process MULTIQC {
     stub:
     """
     touch "multiqc_report.html"
+    touch "multiqc_data"
     """
 }
