@@ -16,10 +16,12 @@ process LOFREQ {
 
     output:
     tuple val(sample_id), path("${sample_id}.lofreq.vcf.gz"), emit: vcf_file
+    path "${sample_id}_vcf.tsv", emit: vcf_info
     path "${sample_id}.lofreq.log"
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
+    def publishDir = file(params.outputDir + "/variants/" + sample_id + ".lofreq.vcf.gz")
     """
     lofreq call-parallel                            \
         --call-indels                               \
@@ -34,12 +36,15 @@ process LOFREQ {
         ${bam_file}                                 \
         > >(tee -a "${sample_id}.lofreq.log")       \
         2> >(tee -a "${sample_id}.lofreq.log" >&2)
+
+    echo -e "${sample_id}\t${publishDir}" > "${sample_id}_vcf.tsv"
     """
     
     stub:
     """
     touch "${sample_id}.lofreq.vcf.gz"
     touch "${sample_id}.lofreq.log"
+    touch "${sample_id}_vcf.tsv"
     """
 }
 

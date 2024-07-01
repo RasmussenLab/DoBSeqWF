@@ -15,12 +15,14 @@ process HAPLOTYPECALLER {
 
     output:
     tuple val(sample_id), path("${sample_id}*.GATK.vcf.gz"), emit: vcf_file
+    path "${sample_id}_vcf.tsv", emit: vcf_info
     path "${sample_id}*.haplotypecaller.log"
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     def add_intervals = interval ? "-L ${interval}" : ""
     def add_intersection = interval ? "--interval-set-rule INTERSECTION" : ""
+    def publishDir = file(params.outputDir + "/variants/" + sample_id + ".GATK.vcf.gz")
     """
     gatk HaplotypeCaller                                \
         --max-reads-per-alignment-start 0               \
@@ -34,10 +36,13 @@ process HAPLOTYPECALLER {
         --max-alternate-alleles 3                       \
         > >(tee -a "${sample_id}.${interval}.haplotypecaller.log")  \
         2> >(tee -a "${sample_id}.${interval}.haplotypecaller.log" >&2)
+    
+    echo -e "${sample_id}\t${publishDir}" > "${sample_id}_vcf.tsv"
     """
 
     stub:
     """
     touch "${sample_id}.${interval}.GATK.vcf.gz" "${sample_id}.${interval}.haplotypecaller.log"
+    touch "${sample_id}_vcf.tsv"
     """
 }
