@@ -60,6 +60,7 @@ include { HS_METRICS as CONS_METRIC } from './modules/hs_metrics'
 include { BAM                       } from './modules/bam'
 
 // Variant calling
+include { INTERVALS                 } from './modules/intervals'
 include { HAPLOTYPECALLER           } from './modules/haplotypecaller'
 include { HAPLOTYPECALLER_JOINT     } from './modules/haplotypecaller_joint'
 include { LOFREQ                    } from './modules/lofreq'
@@ -69,6 +70,7 @@ include { OCTOPUS                   } from './modules/octopus'
 include { FILTER                    } from './modules/filter'
 include { GENOMICSDB                } from './modules/genomicsdb'
 include { GENOTYPEGVCF              } from './modules/genotypegvcf'
+include { MERGEVCFS                 } from './modules/mergevcfs'
 
 // Variant pinning
 include { PINNING                   } from './modules/pinning'
@@ -167,8 +169,8 @@ workflow mapping {
     }
 
 	ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
-    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "raw")
-    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
+    MARKDUPLICATES(ADDREADGROUP.out.bam_file, "raw")
+    CLEAN(MARKDUPLICATES.out.marked_bam_file)
 
     // Add indel quality, ie. BI/BD tags
     INDELQUAL(CLEAN.out.clean_bam_file, reference_genome_ch)
@@ -190,7 +192,7 @@ workflow mapping {
     MULTIQC(fastqc_ch.mix(
         rawdepth_ch,
         mosdepth_ch,
-        MARKDUPLICATES_FAST.out.metrics_file).collect())
+        MARKDUPLICATES.out.metrics_file).collect())
 
     emit:
     bam_file_w_index = INDEX.out.bam_file_w_index
@@ -489,18 +491,38 @@ workflow calling {
     lofreq_ch = LOFREQ.out.vcf_file
 
     if (params.minAltSupport != 0) {
-        FILTER(LOFREQ.out.vcf_file, params.minAltSupport)
-        lofreq_ch = FILTER.out.filtered_vcf_file
+       FILTER(LOFREQ.out.vcf_file, params.minAltSupport)
+       lofreq_ch = FILTER.out.filtered_vcf_file
     }
 
     // GATK
-    HAPLOTYPECALLER(bam_file_w_index, reference_genome_ch, bedfile_ch)
+    // Split by interval list (likely chromosomes) to speed up calling
+    if (params.runHCParallel) {
+        Channel
+            .fromList(params.intervalList)
+            .set { intervalList_ch }
+        
+        bam_file_w_index
+            .combine(intervalList_ch)
+            .set { bam_file_w_interval }
+        INTERVALS(reference_genome_ch, bedfile_ch)
+        HAPLOTYPECALLER(bam_file_w_interval, reference_genome_ch, INTERVALS.out.target_list)
+
+        HAPLOTYPECALLER.out.vcf_file
+            .groupTuple()
+            .map { pool_id, vcf_file -> tuple(pool_id, vcf_file.sort()) }
+            .set { vcf_by_intervals }
+        
+        MERGEVCFS(vcf_by_intervals)
+    } else {
+        HAPLOTYPECALLER(bam_file_w_index, reference_genome_ch, bedfile_ch)
+    }
 
     // Combine VCF file channels
     HAPLOTYPECALLER.out.vcf_file
-        .mix(lofreq_ch)
-        .map { pool_id, vcf_file -> vcf_file }
-        .set { vcf_file_ch }
+       .mix(lofreq_ch)
+       .map { pool_id, vcf_file -> vcf_file }
+       .set { vcf_file_ch }
     
     // Pin variants
     PINNING(vcf_file_ch.collect(), file(params.pooltable), file(params.decodetable))
@@ -665,25 +687,8 @@ workflow call_joint_truth {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow umi {
-    umi_mapping(pooltable_ch)
-}
 
 workflow {
-    call_truth(cramtable_ch)
-}
-
-workflow truth_joint {
-    call_joint_truth(cramtable_ch)
-}
-
-workflow standard_joint {
-    BAM(cramtable_ch, reference_genome_ch)
-    bam_file_w_index_ch = INDEX(BAM.out.bam_file)
-    call_joint(bam_file_w_index_ch)
-}
-
-workflow standard {
     if (params.step != 'calling') {
         bam_file_w_index_ch = mapping(pooltable_ch)
     } else {
