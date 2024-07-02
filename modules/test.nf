@@ -9,6 +9,7 @@ process TEST {
     input:
     path pinned_variants
     path snv_list
+    val pinpoint_method
 
     output:
     path "test.passed" optional true
@@ -20,6 +21,7 @@ process TEST {
     test.py                                     \
         -t ${snv_list}                          \
         -v ${pinned_variants}                   \
+        -m ${pinpoint_method}                   \
         2> >(tee -a "test.log" >&2)
     """
 
