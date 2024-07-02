@@ -37,7 +37,7 @@ process LOFREQ {
         > >(tee -a "${sample_id}.lofreq.log")       \
         2> >(tee -a "${sample_id}.lofreq.log" >&2)
 
-    echo -e "${sample_id}\t${publishDir}" > "${sample_id}_vcf.tsv"
+    echo -e "${sample_id}\t${publishDir}\tlofreq" > "${sample_id}_vcf.tsv"
     """
     
     stub:

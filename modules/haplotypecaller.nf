@@ -37,7 +37,7 @@ process HAPLOTYPECALLER {
         > >(tee -a "${sample_id}.${interval}.haplotypecaller.log")  \
         2> >(tee -a "${sample_id}.${interval}.haplotypecaller.log" >&2)
     
-    echo -e "${sample_id}\t${publishDir}" > "${sample_id}_vcf.tsv"
+    echo -e "${sample_id}\t${publishDir}\tGATK" > "${sample_id}_vcf.tsv"
     """
 
     stub:

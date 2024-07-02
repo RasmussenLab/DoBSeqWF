@@ -19,7 +19,7 @@ process PILOT_PINPOINT {
 
     script:
     """
-    pinning.R \
+    pilot_pinpoint.R \
         --nextflow
     """
 
