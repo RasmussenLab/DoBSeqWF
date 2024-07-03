@@ -100,8 +100,8 @@ def decode(decodetable_path: Path, coordtable_path: Path) -> Tuple[Dict[str, Tup
     decodetable_path (Path): Path to the decodetable file.
     
     Returns:
-    dict: A dictionary mapping sample IDs to their corresponding horizontal and vertical pool indices.
-    dict: A dictionary mapping sample IDs to their corresponding horizontal and vertical pool ids.
+    sample_pool_map: A dictionary mapping sample IDs to their corresponding horizontal and vertical pool indices.
+    sample_pool_ids: A dictionary mapping sample IDs to their corresponding horizontal and vertical pool ids.
     """
 
     sample_pool_map = {}
@@ -123,16 +123,16 @@ def decode(decodetable_path: Path, coordtable_path: Path) -> Tuple[Dict[str, Tup
 
 def get_vartable_paths(coordtable_path: Path, vartable_folder: Path, caller: str, matrix_size: int) -> Tuple[List[Path], List[Path]]:
     """
-    Creates lists of paths to variant tables for each pool based on the pooltable file.
+    Creates lists of paths to variant tables for each pool based on the coordtable file.
     
     Parameters:
-    pooltable_path (Path): Path to the pooltable file.
+    coordtable_path (Path): Path to the coordtable file.
     vartable_folder (Path): Path to the folder containing variant tables.
     caller (str): Caller name.
     matrix_size (int): Size of matrix dimensions.
     
     Returns:
-    tuple: A tuple containing the lists of paths to variant tables for horizontal and vertical pools.
+    A tuple containing the lists of paths to variant tables for horizontal and vertical pools.
     """
     horizontal_vartables = ["" for _ in range(matrix_size)]
     vertical_vartables = ["" for _ in range(matrix_size)]
@@ -160,7 +160,7 @@ def pin(matrix_size: int, vartable_folder: Path, coordtable_path: Path, decodeta
     caller (str): Caller name.
     
     Returns:
-    dict: A dictionary mapping sample IDs to their corresponding unique variants and all pinpointable variants.
+    A dictionary mapping sample IDs to their corresponding unique variants and all pinpointable variants.
     """
     sample_variants = {}
 
@@ -256,7 +256,7 @@ def main(matrix_size: int, vartable_folder: Path, vcf_folder: Path, coordtable_p
             process_vcf.merge_matrix()
 
     logging.info("Summarizing results")
-    with open(results_folder / "simple_summary.tsv", 'w') as fout:
+    with open(results_folder / "summary.tsv", 'w') as fout:
         for sample, pinnables in sample_variants.items():
             for v_type in ["unique_pins", "all_pins"]:
                 print(sample, v_type, len(pinnables[v_type]), sep='\t', file=fout)
