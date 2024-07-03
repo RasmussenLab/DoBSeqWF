@@ -7,7 +7,12 @@ import subprocess
 import argparse
 import logging
 
-###
+## This is pin.py - pinning script for the DoBSeq pipeline.
+# mads - 2024-07-03
+#
+# Requires:
+# - bcftools
+# - htslib
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
