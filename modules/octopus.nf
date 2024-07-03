@@ -4,7 +4,7 @@ process OCTOPUS {
     // https://luntergroup.github.io/octopus/
 
     // Unfortunately env module on NGC is not working well. This makes the script not-portable.
-    // This version works on NGC only.
+    // This version works on NGC only. To run locally, comment out "singularity exec" and use "octopus" directly.
     
     // cpus = 8
     // memory = { 32.GB * task.attempt }
