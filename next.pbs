@@ -29,11 +29,10 @@ version=2.0
 root=/ngc/tools/ngctools/${name}/${version}
 data=/ngc/shared/${name}
 
-export NXF_SINGULARITY_CACHEDIR ${data}/containers
-export NXF_ASSETS ${root}/pipelines
-export NXF_SCM_FILE ${root}/scm
-export NXF_PLUGINS_DIR ${data}/plugins
-export NXF_ORG nf-dk
+export NXF_SINGULARITY_CACHEDIR=${data}/containers
+export NXF_ASSETS=${root}/pipelines
+export NXF_SCM_FILE=${root}/scm
+export NXF_PLUGINS_DIR=${data}/plugins
 
 module load tools ngctools jdk/18 nextflow/24.04.2
 
