@@ -144,7 +144,7 @@ git clone /ngc/projects2/dp_00005/data/predisposed/git/DoBSeqWF
 
 ```Bash
 cd DoBSeqWF
-bash DoBSeqWF/assets/helper_scripts/create_pooltable.sh ../data/predisposed/data/<batch_id>/
+bash assets/helper_scripts/create_pooltable.sh ../data/predisposed/data/<batch_id>/
 ```
 
 ### 4. Adjust configuration file:
