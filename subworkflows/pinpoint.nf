@@ -13,7 +13,6 @@ workflow PINPOINT {
     take:
     vcf_file
     decode_table
-    coord_table
     reference_genome
     
     main:
@@ -34,9 +33,7 @@ workflow PINPOINT {
         norm_vcfs,
         vartables,
         decode_table,
-        coord_table,
-        'GATK',
-        params.matrix_size)
+        'GATK')
     emit:
     pinned_variants = PINPY.out.lookup_table
 }

@@ -116,7 +116,7 @@ workflow {
             PILOT_PINPOINT(vcf_ch.collect(), file(params.pooltable), file(params.decodetable))
             pin_ch = PILOT_PINPOINT.out.pinned_variants
         } else if (params.pinpoint_method == 'new') {
-            PINPOINT(gatk_ch, file(params.decodetable), file(params.coordtable), reference_genome_ch)
+            PINPOINT(gatk_ch, file(params.decodetable), reference_genome_ch)
             pin_ch = PINPOINT.out.pinned_variants
         }
     }

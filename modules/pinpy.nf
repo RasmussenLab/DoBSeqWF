@@ -4,33 +4,29 @@ process PINPY {
     // memory = { 4.GB * task.attempt }
     // time = { 1.hour * task.attempt }
 
-    publishDir "${params.outputDir}/pinpoint_variants/", pattern: "results", mode:'copy'
+    publishDir "${params.outputDir}/", mode:'copy'
 
     input:
     path vcf_files
     path vartables
     path decodetable
-    path coordtable
     val caller
-    val matrix_size
 
     output:
-    path "results"
-    path "results/lookup.tsv", emit: lookup_table
+    path "pinpoint_variants"
+    path "pinpoint_variants/lookup.tsv", emit: lookup_table
 
     script:
     """
     pin.py \
-        --matrix-size "${matrix_size}" \
-        --decodetable-path "${decodetable}" \
-        --coordtable-path "${coordtable}" \
+        --decodetable "${decodetable}" \
         --caller "${caller}" \
-        --results-folder results \
+        --results-folder pinpoint_variants \
     """
 
     stub:
     """
-    mkdir results
-    touch results/lookup.tsv
+    mkdir pinpoint_variants
+    touch pinpoint_variants/lookup.tsv
     """
 }
