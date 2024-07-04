@@ -149,8 +149,7 @@ bash assets/helper_scripts/create_pooltable.sh ../data/predisposed/data/<batch_i
 
 ### 4. Adjust configuration file:
 
-Fill out config.json with the correct paths and parameters.
-
+Fill out config.json with the correct paths and parameters. Decodetable is not needed for mapping only. Look into nextflow.config for possible parameters to set in the conifg.json.
 
 ### 5. Run pipeline
 
