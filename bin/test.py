@@ -13,9 +13,11 @@ def test():
     parser = argparse.ArgumentParser(description='Compare test data')
     parser.add_argument('-t', type=Path, help='True SNVs')
     parser.add_argument('-v', type=Path, help='Pipeline variants')
+    parser.add_argument('-m', type=str, default='pinpy', help='Pinpoint method')
     args = parser.parse_args()
     truth_set = Path(args.t)
     pipeline_set = Path(args.v)
+    pinpoint_method = args.m
 
     logger.info('Comparing test data')
     sample_vars_truth = dict()
@@ -30,15 +32,23 @@ def test():
             sample_vars_truth[sample_info[0]].add(":".join(sample_info[1:]))
     
     # Get pipeline data:
-    with open(pipeline_set) as fin:
-        var_info = fin.readline().strip().split()
-        var_id_idx = var_info.index('var.ID')
-        fam_id_idx = var_info.index('FAMID.A')
-        for line in fin:
-            sample_info = line.strip().split()
-            if sample_info[fam_id_idx] not in sample_vars:
-                sample_vars[sample_info[fam_id_idx]] = set()
-            sample_vars[sample_info[fam_id_idx]].add(sample_info[var_id_idx])
+    if pinpoint_method == 'pilot':
+        with open(pipeline_set) as fin:
+            var_info = fin.readline().strip().split()
+            var_id_idx = var_info.index('var.ID')
+            fam_id_idx = var_info.index('FAMID.A')
+            for line in fin:
+                sample_info = line.strip().split()
+                if sample_info[fam_id_idx] not in sample_vars:
+                    sample_vars[sample_info[fam_id_idx]] = set()
+                sample_vars[sample_info[fam_id_idx]].add(sample_info[var_id_idx])
+    elif pinpoint_method == 'new':
+        with open(pipeline_set) as fin:
+            for line in fin:
+                sample_info = line.strip().split()
+                if sample_info[0] not in sample_vars:
+                    sample_vars[sample_info[0]] = set()
+                sample_vars[sample_info[0]].add(sample_info[1])
     
     # Compare data:
     test_pass = True

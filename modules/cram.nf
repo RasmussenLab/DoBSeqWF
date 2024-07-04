@@ -33,6 +33,7 @@ process CRAM {
     stub:
     """
     touch "${sample_id}.cram"
+    touch "${sample_id}_cram.tsv"
     """
 }
 

@@ -176,3 +176,5 @@ DoBSeqWF.Rproj
 .rpack/
 nxf-tmp.*
 cramtable.tsv
+pooltable.tsv
+vcftable.tsv

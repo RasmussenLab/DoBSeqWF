@@ -1,4 +1,4 @@
-process PINNING {
+process PILOT_PINPOINT {
 
     // cpus = { 2 * task.attempt }
     // memory = { 4.GB * task.attempt }
@@ -19,7 +19,7 @@ process PINNING {
 
     script:
     """
-    pinning.R \
+    pilot_pinpoint.R \
         --nextflow
     """
 
