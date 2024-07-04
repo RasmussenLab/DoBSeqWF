@@ -1,8 +1,8 @@
 process VARTABLE {
     tag "VCF to TSV $sample_id"
 
-    publishDir "${params.outputDir}/log/vartable/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
-    publishDir "${params.outputDir}/vartable/", pattern: "${sample_id}.${caller}.tsv", mode:'copy'
+    publishDir "${params.outputDir}/log/variant_tables/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
+    publishDir "${params.outputDir}/variant_tables/", pattern: "${sample_id}.${caller}.tsv", mode:'copy'
 
     input:
     tuple val(sample_id), path(vcf_file), path(index)
