@@ -53,7 +53,16 @@ workflow MAPPING {
     RAW_INDEX(ALIGNMENT.out.raw_bam_file)
     RAW_DEPTH(RAW_INDEX.out.bam_file_w_index, bedfile, "")
     ADDREADGROUP(ALIGNMENT.out.raw_bam_file)
-    MARKDUPLICATES(ADDREADGROUP.out.bam_file, false, "")
+
+    if (params.fast_markdup) {
+        MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "")
+        markdup_ch = MARKDUPLICATES_FAST.out.marked_bam_file
+        markdup_metrics_ch = MARKDUPLICATES_FAST.out.metrics_file
+    } else {
+        MARKDUPLICATES(ADDREADGROUP.out.bam_file, false, "")
+        markdup_ch = MARKDUPLICATES.out.marked_bam_file
+        markdup_metrics_ch = MARKDUPLICATES.out.metrics_file
+    }
 
     if (params.fullQC) {
         HS_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome, bedfile, "")
@@ -69,14 +78,14 @@ workflow MAPPING {
             GC_METRICS.out.metrics_file,
             GC_METRICS.out.summary_file,
             INSERT_SIZE_METRICS.out.metrics_file,
-            MARKDUPLICATES.out.metrics_file)
+            markdup_metrics_ch)
     } else {
         qc_ch = qc_ch.mix(
             RAW_DEPTH.out.region_dist,
-            MARKDUPLICATES.out.metrics_file)
+            markdup_metrics_ch)
     }
     
-    CLEAN(MARKDUPLICATES.out.marked_bam_file)
+    CLEAN(markdup_ch)
 
     // Add indel quality, ie. BI/BD tags (for LoFreq compatibility)
     INDELQUAL(CLEAN.out.clean_bam_file, reference_genome)
