@@ -78,7 +78,7 @@ bash next.pbs -params-file test_config.json
 ### 4. Submit pipeline with test data:
 
 ```Bash
-myqsub next.pbs -F -params-file test_config.json
+myqsub next.pbs -F "-params-file test_config.json"
 ```
 
 ## Running the pipeline with _real_ data
@@ -154,7 +154,7 @@ Fill out config.json with the correct paths and parameters. Decodetable is not n
 ### 5. Run pipeline
 
 ```Bash
-myqsub next.pbs -F -params-file config.json
+myqsub next.pbs -F "-params-file config.json"
 ```
 
 ### 6. Monitor progress
