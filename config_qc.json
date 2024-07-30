@@ -1,0 +1,10 @@
+{
+    "ploidy": 48,
+    "step": "mapping",
+    "downsample": 4,
+    "fullQC": "true",
+    "pooltable": "pooltable.tsv",
+    "decodetable": "decodetable.tsv",
+    "reference_genome": "/ngc/projects2/dp_00005/data/predisposed/resources/reference/Homo_sapiens_assembly38_noAlt",
+    "bedfile": "/ngc/projects2/dp_00005/data/predisposed/resources/targets/Probes_merged_ok_SSI_PREDiSPOSED-v1_1X_TE-93129556_hg38.bed"
+}
