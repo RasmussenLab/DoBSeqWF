@@ -21,6 +21,7 @@ include { CRAMTABLE                 } from '../modules/cramtable'
 include { VALIDATE                  } from '../modules/validate'
 
 // Full QC modules
+include { DOWNSAMPLE                } from '../modules/downsample'
 include { HS_METRICS                } from '../modules/hs_metrics'
 include { ALIGNMENT_METRICS         } from '../modules/alignment_metrics'
 include { GC_METRICS                } from '../modules/gc_metrics'
