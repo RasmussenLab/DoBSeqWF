@@ -5,6 +5,7 @@ process NORMALISE_VCF {
     // 3. Checks refs against reference genome
 
     publishDir "${params.outputDir}/log/normalise_vcf/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
+    publishDir "${params.outputDir}/normalised_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
 
     input:
     tuple val(sample_id), path(vcf_file), path(index)
