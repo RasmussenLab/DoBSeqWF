@@ -13,7 +13,12 @@ include { INDELQUAL                 } from '../modules/indelqual'
 include { INDEX                     } from '../modules/index'
 include { BQSR                      } from '../modules/bqsr'
 include { APPLY_BQSR                } from '../modules/apply_bqsr'
+include { CRAM                      } from '../modules/cram'
+include { CRAMTABLE                 } from '../modules/cramtable'
 include { MOSDEPTH                  } from '../modules/mosdepth'
+include { INDEX_VCF                 } from '../modules/index_vcf'
+include { VARTABLE                  } from '../modules/vartable'
+include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 
 include { HC_TRUTH                  } from '../modules/haplotypecaller_truth'
 
@@ -57,6 +62,10 @@ workflow CALL_TRUTH {
     // Apply recalibration
     APPLY_BQSR(BQSR.out.bqsr_file, reference_genome)
 
+    // Store CRAM files
+    CRAM(APPLY_BQSR.out.corrected_bam_file, reference_genome)
+    CRAMTABLE(CRAM.out.cram_info.collect())
+
     // Index
     INDEX(APPLY_BQSR.out.corrected_bam_file)
 
@@ -80,6 +89,9 @@ workflow CALL_TRUTH {
         GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome)
     } else {
         HC_TRUTH(INDEX.out.bam_file_w_index, reference_genome, bedfile)
+        INDEX_VCF(HC_TRUTH.out.vcf_file, 'GATK')
+        VARTABLE(INDEX_VCF.out.vcf_w_index, 'GATK')
+        NORMALISE_VCF(INDEX_VCF.out.vcf_w_index, reference_genome, 'GATK')
     }
 
     MOSDEPTH(INDEX.out.bam_file_w_index, bedfile, "deduplicated")
