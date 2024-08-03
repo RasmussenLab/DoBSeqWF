@@ -14,7 +14,7 @@ log.info """\
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT MODULES
+    IMPORT MODULES AND SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -23,6 +23,8 @@ include { MAPPING_UMI               } from './subworkflows/mapping_umi'
 
 include { CALLING                   } from './subworkflows/calling'
 include { CALL_TRUTH                } from './subworkflows/call_wgs_truthset'
+
+include { ANNOTATION                } from './subworkflows/annotation'
 
 // Cram conversion
 include { BAM                       } from './modules/bam'
@@ -141,6 +143,26 @@ workflow truthset {
         .map { row -> tuple(row[0], file(row[1])) }
     
     CALL_TRUTH(cramtable_ch, reference_genome_ch, bedfile_ch)
+}
+
+workflow annotate {
+    Channel
+        .fromPath(params.vcftable)
+        .splitCsv(sep: '\t')
+        .map { row -> tuple(row[0], file(row[1]), row[2]) }
+            .branch { sample, vcf_file, caller ->
+                GATK: caller == 'GATK'
+                lofreq: caller == 'lofreq'
+                other: true
+            }
+            .set { vcftable_ch }
+        
+    gatk_ch = vcftable_ch.GATK
+        .map { sample, vcf_file, caller -> tuple(sample, vcf_file) }
+    lofreq_ch = vcftable_ch.lofreq
+        .map { sample, vcf_file, caller -> tuple(sample, vcf_file) }
+
+    ANNOTATION(gatk_ch)
 }
 
 workflow.onComplete {
