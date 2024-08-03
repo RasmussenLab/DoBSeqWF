@@ -42,6 +42,7 @@ process HAPLOTYPECALLER {
     """
 
     stub:
+    def id = interval ? "${sample_id}.${interval}" : sample_id
     """
     touch "${id}.GATK.vcf.gz" "${id}.haplotypecaller.log"
     touch "${sample_id}_vcf.tsv"
