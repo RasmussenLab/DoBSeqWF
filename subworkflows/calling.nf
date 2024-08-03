@@ -85,7 +85,7 @@ workflow CALLING {
             hc_ch = GENOTYPEGVCF.out.vcf_file
         } else {
             HAPLOTYPECALLER(bam_file_w_index, reference_genome, bedfile)
-            VCFTABLE(MERGEVCFS.out.vcf_info
+            VCFTABLE(HAPLOTYPECALLER.out.vcf_info
                 .mix(lofreq_info)
                 .collect())
             hc_ch = HAPLOTYPECALLER.out.vcf_file
