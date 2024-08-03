@@ -1,0 +1,7 @@
+name: snpeff
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - snpeff=4.3
