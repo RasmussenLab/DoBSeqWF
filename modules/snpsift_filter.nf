@@ -18,17 +18,17 @@ process SNPSIFT_FILTER {
 
     script:
     """
-    snpsift filter \
+    ${snpsift} filter \
         "(exists LOF)" \
         ${vcf_file} \
         > ${sample_id}.${caller}.lof.vcf
     
-    snpsift filter \
+    ${snpsift} filter \
         "CLNSIG =~ 'Pathogenic'" \
         ${vcf_file} \
         > ${sample_id}.${caller}.p.vcf
 
-    snpsift filter \
+    ${snpsift} filter \
         "((exists LOF) | (CLNSIG =~ 'Pathogenic'))" \
         ${vcf_file} \
         > ${sample_id}.${caller}.lofp.vcf

@@ -9,16 +9,17 @@ process SNPSIFT_CLINVAR {
     input:
     tuple val(sample_id), path(vcf_file, stageAs: "variants/*")
     val caller
-    val clinvar_db
+    path clinvar_db
 
     output:
     tuple val(sample_id), path("${sample_id}.${caller}.annotated.vcf"), emit: clinvar_vcf
     path "${sample_id}.${caller}.log"
 
     script:
+    def db = file(params.clinvar_db).getName()
     """
-    snpsift annotate                                    \
-        ${clinvar_db}                                   \
+    ${snpsift} annotate                                 \
+        ${db}                                           \
         ${vcf_file}                                     \
         > ${sample_id}.${caller}.annotated.vcf          \
         2> >(tee -a "${sample_id}.${caller}.log" >&2)

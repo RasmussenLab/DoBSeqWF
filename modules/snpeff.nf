@@ -22,7 +22,7 @@ process SNPEFF {
 
     script:
     """
-    snpeff -Xmx4g ann                                       \
+    ${snpeff} -Xmx4g ann                                    \
         ${snpeff_db}                                        \
         -c ${snpeff_config}                                 \
         -csvStats "${sample_id}.${caller}_snpeff_stats.csv" \
@@ -30,7 +30,7 @@ process SNPEFF {
         -strict                                             \
         -noMotif                                            \
         -canon                                              \
-        --dataDir ${snpeff_cache}                           \
+        -dataDir ${snpeff_cache}                            \
         ${vcf_file}                                         \
         > ${sample_id}.${caller}.annotated.vcf              \
         2> >(tee -a "${sample_id}.${caller}.log" >&2)

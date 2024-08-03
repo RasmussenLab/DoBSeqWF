@@ -9,7 +9,7 @@ include { SNPSIFT_CLINVAR           } from '../modules/snpsift_clinvar'
 include { SNPSIFT_FILTER            } from '../modules/snpsift_filter'
 
 snpeff_cache_ch = Channel.fromPath(params.snpeff_cache, checkIfExists: true).collect()
-clinvardb_ch = Channel.fromPath(params.clinvar_db, checkIfExists: true).collect()
+clinvardb_ch = Channel.fromPath(params.clinvar_db + "*", checkIfExists: true).collect()
 snpeff_config_ch = Channel.fromPath(params.snpeff_config, checkIfExists: true).collect()
 
 workflow ANNOTATION {
