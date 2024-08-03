@@ -1,0 +1,32 @@
+process SNPSIFT_CLINVAR {
+    tag "$sample_id"
+
+    // Add ClinVar annotations to a VCF file using SnpSift.
+
+    publishDir "${params.outputDir}/log/snpsift_clinvar/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
+    publishDir "${params.outputDir}/annotated_variants/", pattern: "${sample_id}.${caller}.annotated.vcf", mode:'copy'
+
+    input:
+    tuple val(sample_id), path(vcf_file, stageAs: "variants/*")
+    val caller
+    val clinvar_db
+
+    output:
+    tuple val(sample_id), path("${sample_id}.${caller}.annotated.vcf"), emit: clinvar_vcf
+    path "${sample_id}.${caller}.log"
+
+    script:
+    """
+    snpsift annotate                                    \
+        ${clinvar_db}                                   \
+        ${vcf_file}                                     \
+        > ${sample_id}.${caller}.annotated.vcf          \
+        2> >(tee -a "${sample_id}.${caller}.log" >&2)
+    """
+
+    stub:
+    """
+    touch "${sample_id}.${caller}.annotated.vcf"
+    touch "${sample_id}.${caller}.log"
+    """
+}
