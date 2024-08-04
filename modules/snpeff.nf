@@ -7,6 +7,7 @@ process SNPEFF {
     // -noMotif avoids adding motif annotations.
 
     publishDir "${params.outputDir}/log/snpeff/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
+    publishDir "${params.outputDir}/log/snpeff/stats/", pattern: "${sample_id}.${caller}_snpeff_stats.csv", mode:'copy'
 
     input:
     tuple val(sample_id), path(vcf_file, stageAs: "variants/*")
