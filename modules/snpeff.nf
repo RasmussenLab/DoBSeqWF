@@ -23,7 +23,7 @@ process SNPEFF {
 
     script:
     """
-    ${snpeff} -Xmx4g ann                                    \
+    ${params.snpeff}                                        \
         ${snpeff_db}                                        \
         -c ${snpeff_config}                                 \
         -csvStats "${sample_id}.${caller}_snpeff_stats.csv" \

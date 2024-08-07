@@ -18,7 +18,7 @@ process SNPSIFT_CLINVAR {
     script:
     def db = file(params.clinvar_db).getName()
     """
-    ${snpsift} annotate                                 \
+    ${params.snpsift} annotate                          \
         ${db}                                           \
         ${vcf_file}                                     \
         > ${sample_id}.${caller}.annotated.vcf          \
