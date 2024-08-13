@@ -8,7 +8,7 @@ include { INDEX_VCF                 } from '../modules/index_vcf'
 include { VARTABLE                  } from '../modules/vartable'
 include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { PINPY                     } from '../modules/pinpy'
-include { ANNOTATION                } from 'subworkflows/annotation'
+include { ANNOTATION                } from '../subworkflows/annotation'
 
 workflow PINPOINT {
     take:
@@ -22,7 +22,7 @@ workflow PINPOINT {
     ANNOTATION(NORMALISE_VCF.out.norm_vcf)
     VARTABLE(ANNOTATION.out.annotated_vcf, 'GATK')
     
-    ANNOTATION.out.annotated_vcf,
+    ANNOTATION.out.annotated_vcf
         .map { sample, vcf -> vcf }
         .collect()
         .set { norm_vcfs }
