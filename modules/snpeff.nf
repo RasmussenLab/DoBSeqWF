@@ -17,7 +17,7 @@ process SNPEFF {
     path snpeff_config
 
     output:
-    tuple val(sample_id), path("${sample_id}.${caller}.annotated.vcf"), emit: snpeff_vcf
+    tuple val(sample_id), path("${sample_id}.${caller}.vcf"), emit: snpeff_vcf
     path "${sample_id}.${caller}_snpeff_stats.csv", emit: snpeff_stats
     path "${sample_id}.${caller}.log"
 
@@ -33,13 +33,13 @@ process SNPEFF {
         -canon                                              \
         -dataDir ${snpeff_cache}                            \
         ${vcf_file}                                         \
-        > ${sample_id}.${caller}.annotated.vcf              \
+        > ${sample_id}.${caller}.vcf              \
         2> >(tee -a "${sample_id}.${caller}.log" >&2)
     """
 
     stub:
     """
-    touch "${sample_id}.${caller}.annotated.vcf"
+    touch "${sample_id}.${caller}.vcf"
     touch "${sample_id}.${caller}_snpeff_stats.csv"
     touch "${sample_id}.${caller}.log"
     """

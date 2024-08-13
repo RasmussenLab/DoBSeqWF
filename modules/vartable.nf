@@ -5,7 +5,7 @@ process VARTABLE {
     publishDir "${params.outputDir}/variant_tables/", pattern: "${sample_id}.${caller}.tsv", mode:'copy'
 
     input:
-    tuple val(sample_id), path(vcf_file), path(index)
+    tuple val(sample_id), path(vcf_file)
     val caller
 
     output:
