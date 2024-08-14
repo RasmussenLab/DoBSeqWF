@@ -15,6 +15,8 @@ process PINPY {
     output:
     path "pinpoint_variants"
     path "pinpoint_variants/lookup.tsv", emit: lookup_table
+    path "pinpoint_variants/all_pins/*.vcf", emit: vcf_all_pins
+    path "pinpoint_variants/unique_pins/*.vcf", emit: vcf_unique_pins
 
     script:
     """
