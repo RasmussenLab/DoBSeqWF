@@ -1,0 +1,392 @@
+---
+title: "DoBSeq Report"
+author: "Mads Cort Nielsen"
+date: "2024-08-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+```
+
+
+#### Load packages
+```{r echo=TRUE, results='hide', message=FALSE}
+library('TidyMultiqc')
+library("dplyr")
+library("stringr")
+library("ggplot2")
+library("tidyr")
+library("readr")
+library("tibble")
+library("forcats")
+library("scales")
+```
+
+```{r, echo=TRUE, results='hide'}
+
+mosdepth_multiqc_path <- '../data_links/multiqc_data.json'
+multidata <- TidyMultiqc::load_multiqc(mosdepth_multiqc_path)
+
+pool_variant_table_path <- '../output/combined_pool_table.tsv'
+pool_vartable <- read_delim(pool_variant_table_path,
+                            col_names = TRUE)
+
+pinpoint_variant_table_path <- '../output/pinpoint_table.tsv'
+pinpoint_vartable <- read_delim(pinpoint_variant_table_path,
+                       col_names = TRUE)
+```
+
+### Coverage
+
+#### Extract coverage
+
+```{r echo=T, results='hide'}
+depth_data <- 
+  multidata %>% select('metadata.sample_id',
+                       'general.median_coverage') %>% 
+  mutate('status' = if_else(!str_ends(metadata.sample_id,
+                                     'deduplicated'),
+                            'raw',
+                            'deduplicated')) %>% 
+  mutate(sample_id = str_replace(metadata.sample_id, '_deduplicated','')) %>% 
+  mutate('median_coverage' = general.median_coverage) %>% 
+  select(sample_id,
+         median_coverage,
+         status)
+```
+
+#### Coverage before and after deduplication - bars
+
+```{r warning=FALSE, message=FALSE, fig.width=6,fig.height=8}
+coverage_plot <- depth_data %>% 
+  ggplot(aes(x=reorder(sample_id,median_coverage),
+             y=median_coverage,
+             fill=status)) +
+  geom_col(position = 'dodge') +
+  geom_hline(aes(yintercept=480,
+                 color = "10x"),
+             linetype="dashed",
+             size=0.5) +
+  geom_hline(aes(yintercept=1440,
+                 color = "30x"),
+             linetype="dashed",
+             size=0.5) +
+  geom_hline(aes(yintercept=4800,
+                 color = "100x"),
+             linetype="dashed",
+             size=0.5) +
+  scale_color_manual(name = "allele coverage",
+                     values = c("10x" = "darkred",
+                                "30x" = "orange",
+                                "100x" = "darkgreen")) +
+  labs(color = 'allele coverage') +
+  coord_flip() +
+  theme_minimal() +
+  theme() +
+  xlab('Pool ID') +
+  ylab('Median coverage')
+
+ggsave('../output/coverage.pdf',coverage_plot)
+ggsave('../output/coverage.png',coverage_plot)
+coverage_plot
+```
+
+#### Coverage before and after deduplication - points
+```{r warning=FALSE, message=FALSE}
+coverage_points <- 
+  depth_data %>% 
+  filter(median_coverage > 500) %>% 
+  pivot_wider(names_from = status,
+              values_from = median_coverage) %>% 
+  ggplot(aes(y=deduplicated,
+             x=raw)) +
+  geom_point() +
+  ylim(0,4900) +
+  xlim(0,30500) +
+  geom_hline(aes(yintercept=480,
+                 color = "10x"),
+             linetype="dashed",
+             size=0.5) +
+  geom_hline(aes(yintercept=1440,
+                 color = "30x"),
+             linetype="dashed",
+             size=0.5) +
+  geom_hline(aes(yintercept=4800,
+                 color = "100x"),
+             linetype="dashed",
+             size=0.5) +
+  scale_color_manual(name = "allele coverage",
+                     values = c("10x" = "darkred",
+                                "30x" = "orange",
+                                "100x" = "darkgreen")) +
+  #scale_x_continuous(transform='log10') +
+  theme_minimal() +
+  ylab('After deduplication') +
+  xlab('Before deduplication')
+
+ggsave('../output/coverage_points.pdf',coverage_points)
+ggsave('../output/coverage_points.png',coverage_points)
+coverage_points
+```
+
+### Variants by pool
+
+#### Variant count by pool
+```{r echo=TRUE, results='hide',fig.width=8,fig.height=10}
+pool_vartable %>% 
+  group_by(pool, dim) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>%
+  mutate(din = if_else(dim == 'column', 1,0)) %>% 
+  ggplot(aes(x=reorder(pool,din),y=n,fill=dim)) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal() +
+  xlab('Pool ID') +
+  ylab('Variant count') +
+  theme(axis.text=element_text(size=10),
+        legend.title = element_blank())
+```
+
+#### VAF by variant
+
+```{r echo=TRUE, results='hide'}
+vafplot <- pool_vartable %>% 
+  filter(pool == 'exp10_24_24ny-4_C10_S84') %>% 
+  ggplot(aes(x=reorder(varid,VAF),y=VAF)) +
+  geom_point() + 
+  theme_minimal() +
+  xlab('Variant') +
+  theme(axis.text.x = element_blank())
+ggsave('../output/vafplot.pdf',plot=vafplot)
+vafplot
+```
+
+
+```{r  fig.keep = 'all', eval=FALSE}
+pools <- pool_vartable %>% 
+  pull(pool)
+unique(pools)
+
+for (pool_id in unique(pools)) {
+  plot_data <- pool_vartable %>% 
+    filter(pool == pool_id) %>% 
+    ggplot(aes(x=reorder(varid,VAF),y=VAF)) +
+    geom_point() +
+    theme_minimal() +
+    xlab('Variant') +
+    theme(axis.text.x = element_blank())
+  print(plot_data)
+}
+```
+
+
+```{r echo=TRUE, results='hide'}
+pool_vartable %>% 
+  filter(pool %in% c('exp11_24_24ny-4_D7_S93',
+                   'exp8_24_24ny-4_B12_S74',
+                   'exp10_24_24ny-4_C9_S83',
+                   'exp6_24_24ny-4_A8_S58'
+                   )) %>% 
+  ggplot(aes(x=reorder(uvarid,VAF),y=VAF, colour=pool)) +
+  geom_point(alpha=0.1) +
+  theme_minimal() +
+  xlab('Variant') +
+  theme(axis.text.x = element_blank())
+```
+
+#### VAF / AC assumed == 1
+
+```{r echo=TRUE, results='hide'}
+pool_vartable %>% 
+  filter(pool == 'exp10_24_24ny-4_C10_S84') %>% 
+  ggplot(aes(x=VAF)) +
+  geom_histogram(bins = 48)
+```
+```{r echo=TRUE, results='hide',fig.width=8,fig.height=10}
+pool_vartable %>% 
+  mutate(din = if_else(dim == 'column', 1,0)) %>% 
+  mutate(n = VAF*48) %>% 
+  #filter(n == 1) %>%
+  filter((n < 1.25) & (n > 0.75)) %>% 
+  ggplot(aes(y=reorder(pool,din), fill=dim)) +
+  geom_bar() +
+  theme_minimal() +
+  theme(legend.title = element_blank()) +
+  xlab('Variant count') +
+  ylab('Pool ID')
+```
+
+### Variants by individual
+#### Variant count by individual - points
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  group_by(sample_id) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=sample_id,
+             y=n)) +
+  geom_point() +
+  theme_minimal() +
+  xlab('Individual') +
+  ylab('Variant count')
+```
+
+#### Variant count by individual - points sorted
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  group_by(sample_id) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=reorder(sample_id,n),
+             y=n)) +
+  geom_point() +
+  xlab('Individual') +
+  ylab('Variant count') +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+  
+```
+
+#### Variant count by individual - histogram 
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  group_by(sample_id) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(n)) +
+  geom_histogram() +
+  theme_minimal() +
+  xlab('Variant count') +
+  ylab('Num individuals')
+```
+
+#### Variant count by gene - all genes
+
+```{r, fig.width=10,fig.height=50,echo=TRUE, results='hide'}
+pinpoint_vartable %>%
+  group_by(gene_target) %>% 
+  summarise(n = n()) %>%
+  ggplot(aes(x=n,y=reorder(gene_target,n))) +
+  geom_col() +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size=5)) +
+  ylab('PROBE TARGET GENE') +
+  xlab('Variant count')
+```
+
+#### Variants by gene - all genes - histogram
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  group_by(gene_target) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=n)) +
+  geom_histogram() +
+  theme_minimal() +
+  xlab('Variant count') +
+  ylab('Num genes')
+```
+
+#### Variants by gene - all genes - points
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  group_by(gene_target) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=gene_target,
+             y=n)) +
+  geom_point() +
+  theme_minimal() +
+  theme(axis.text.x = element_blank()) +
+  xlab('Gene') +
+  ylab('Variant count')
+```
+
+#### Pathogenic variants by gene - all genes
+
+```{r, fig.width=10,fig.height=12,echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  filter(is_p == 1) %>% 
+  group_by(clnvar_gene) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=n,y=reorder(clnvar_gene,n))) +
+  geom_col() +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size=10)) +
+  xlab('Variant count') +
+  ylab('Gene')
+```
+
+#### Variants by ACMG gene
+
+```{r, fig.width=10,fig.height=12,echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  filter(is_acmg == 1) %>% 
+  group_by(gene_target) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=n,y=reorder(gene_target,n))) +
+  geom_col() +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size=10)) +
+  xlab('Variant count') +
+  ylab('ACMG Gene')
+```
+
+#### Variants per bp - ACMG genes
+
+```{r, fig.width=10,fig.height=12, echo=TRUE, results='hide'}
+gene_lengths <- read_delim('../output/gene_lengths.tsv',
+                           col_names = c('gene_target',
+                                         'gene_length'))
+
+pinpoint_vartable %>% 
+  right_join(gene_lengths, by='gene_target') %>% 
+  filter(is_acmg == 1) %>% 
+  group_by(gene_target, gene_length) %>% 
+  summarise(n = n()) %>% 
+  mutate(adjusted_n = n/gene_length) %>% 
+  ggplot(aes(x=adjusted_n,y=reorder(gene_target,adjusted_n))) +
+  geom_col() +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size=10)) +
+  xlab('Variant count per bp') +
+  ylab('ACMG Gene')
+```
+
+#### LoF/P variants by ACMG gene
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  filter(is_acmg == 1,
+         is_lofp == 1) %>% 
+  group_by(gene_target) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=n,y=reorder(gene_target,n))) +
+  geom_col() +
+  theme_minimal() +
+  xlab('Variant count') +
+  ylab('ACMG Gene')
+  
+```
+
+#### Pathogenic variants by ACMG gene
+
+
+```{r echo=TRUE, results='hide'}
+pinpoint_vartable %>% 
+  filter(is_acmg == 1,
+         is_p == 1) %>% 
+  group_by(clnvar_gene) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(x=n,y=reorder(clnvar_gene,n))) +
+  geom_col() +
+  theme_minimal() +
+  xlab('Variant count') +
+  ylab('ACMG Gene')
+```
+
+
+
+
