@@ -28,7 +28,7 @@ workflow ANNOTATION {
         vcf_ch = BED_ANNOTATE.out.vcf_file
     }
 
-    SNPEFF(vcf_file, 'GATK', params.snpeff_db, snpeff_cache_ch, snpeff_config_ch)
+    SNPEFF(vcf_ch, 'GATK', params.snpeff_db, snpeff_cache_ch, snpeff_config_ch)
     SNPSIFT_CLINVAR(SNPEFF.out.snpeff_vcf, 'GATK', clinvardb_ch)
     SNPSIFT_FILTER(SNPSIFT_CLINVAR.out.clinvar_vcf, 'GATK')
 

@@ -8,7 +8,7 @@ process NORMALISE_VCF {
     publishDir "${params.outputDir}/normalised_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
 
     input:
-    tuple val(sample_id), path(vcf_file), path(index)
+    tuple val(sample_id), path(vcf_file, stageAs: "input/*")
     path reference_genome
     val caller
 

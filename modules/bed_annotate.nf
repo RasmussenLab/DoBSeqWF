@@ -5,7 +5,7 @@ process BED_ANNOTATE {
     publishDir "${params.outputDir}/log/bed_annotate/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
 
     input:
-    tuple val(sample_id), path(vcf_file, stageAs: 'input')
+    tuple val(sample_id), path(vcf_file, stageAs: "input/*")
     path bedfile
     val caller
 

@@ -5,6 +5,7 @@
 */
 
 include { INDEX_VCF                 } from '../modules/index_vcf'
+include { DROP_PL                   } from '../modules/drop_pl'
 include { VARTABLE                  } from '../modules/vartable'
 include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { PINPY                     } from '../modules/pinpy'
@@ -19,7 +20,8 @@ workflow PINPOINT {
     
     main:
     INDEX_VCF(vcf_file, 'GATK')
-    NORMALISE_VCF(INDEX_VCF.out.vcf_w_index, reference_genome, 'GATK')
+    DROP_PL(INDEX_VCF.out.vcf_w_index, 'GATK')
+    NORMALISE_VCF(DROP_PL.out.vcf_file, reference_genome, 'GATK')
     
     if (params.annotate) {
         ANNOTATION(NORMALISE_VCF.out.norm_vcf)
