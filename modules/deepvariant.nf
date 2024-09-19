@@ -18,7 +18,7 @@ process DEEPVARIANT {
     path bedfile
 
     output:
-    path "${sample_id}.DV.vcf.gz", emit: vcf_file
+    tuple val(sample_id), path("${sample_id}.DV.vcf.gz"), emit: vcf_file
     path "${sample_id}.DV.log"
 
     script:

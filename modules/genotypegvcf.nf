@@ -7,14 +7,14 @@ process GENOTYPEGVCF {
     // time = { 6.hour * task.attempt }
 
     publishDir "${params.outputDir}/log/", pattern: "genotypegvcf.log", mode:'copy'
-    publishDir "${params.outputDir}/variants/", pattern: "joint.vcf.gz", mode:'copy'
+    publishDir "${params.outputDir}/variants/", pattern: "joint.GATK.vcf.gz", mode:'copy'
 
     input:
     path gendb
     path reference_genome
 
     output:
-    path "joint.vcf.gz", emit: joint_vcf
+    tuple val('joint'), path("joint.GATK.vcf.gz"), emit: vcf_file
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
@@ -23,7 +23,7 @@ process GENOTYPEGVCF {
         GenotypeGVCFs                                               \
         -R ${db}                                                    \
         -V gendb://genomicsdb                                       \
-        -O "joint.vcf.gz"                                           \
+        -O "joint.GATK.vcf.gz"                                      \
         -G StandardAnnotation                                       \
         -G AS_StandardAnnotation                                    \
         -G StandardHCAnnotation                                     \
