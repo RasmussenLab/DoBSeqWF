@@ -22,6 +22,7 @@ process MARKDUPLICATES_FAST {
     sambamba markdup                        \
         --nthreads ${task.cpus}             \
 	    --tmpdir .                          \
+        --overflow-list-size 6000000        \
         ${bam_file}                         \
         ${sample_id}.marked.bam             \
         2> >(tee -a "${log_filename}" >&2)
