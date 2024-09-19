@@ -35,9 +35,9 @@ export NXF_SCM_FILE=${root}/scm
 export NXF_PLUGINS_DIR=${data}/plugins
 
 # Disable interactive logging
-export NXF_ANSI_LOG=false
+#export NXF_ANSI_LOG=false
 
-module load tools ngctools jdk/21.0.1 nextflow/24.04.2
+module load tools ngctools jdk/21.0.1 nextflow/24.08.0-edge
 
 nextflow_essential_params='-profile ngc -resume'
 
