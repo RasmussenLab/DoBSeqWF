@@ -16,9 +16,6 @@ include { APPLY_BQSR                } from '../modules/apply_bqsr'
 include { CRAM                      } from '../modules/cram'
 include { CRAMTABLE                 } from '../modules/cramtable'
 include { MOSDEPTH                  } from '../modules/mosdepth'
-include { INDEX_VCF                 } from '../modules/index_vcf'
-include { VARTABLE                  } from '../modules/vartable'
-include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 
 include { HC_TRUTH                  } from '../modules/haplotypecaller_truth'
 
@@ -28,6 +25,11 @@ include { GENOTYPEGVCF              } from '../modules/genotypegvcf'
 
 include { LOFREQ                    } from '../modules/lofreq'
 include { DEEPVARIANT               } from '../modules/deepvariant'
+
+include { INDEX_VCF                 } from '../modules/index_vcf'
+include { VARTABLE                  } from '../modules/vartable'
+include { NORMALISE_VCF             } from '../modules/normalise_vcf'
+include { VCFTABLE                  } from '../modules/vcftable'
 
 include { MULTIQC                   } from '../modules/multiqc'
 
