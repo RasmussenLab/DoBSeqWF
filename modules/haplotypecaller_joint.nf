@@ -32,6 +32,15 @@ process HAPLOTYPECALLER_JOINT {
         -G StandardAnnotation                                       \
         -G AS_StandardAnnotation                                    \
         -G StandardHCAnnotation                                     \
+        -A GcContent                                                \
+        -A HmerIndelLength                                          \
+        -A IndelLength                                              \
+        -A AssemblyComplexity                                       \
+        -A LikelihoodRankSumTest                                    \
+        -A ClippingRankSumTest                                      \
+        -A HaplotypeFilteringAnnotation                             \
+        -A GenotypeSummaries                                        \
+        -A AlleleFraction                                           \
         --disable-read-filter NotDuplicateReadFilter                \
         --max-alternate-alleles 3                                   \
         --max-num-haplotypes-in-population 1000                     \
