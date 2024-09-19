@@ -31,6 +31,8 @@ include { VARTABLE                  } from '../modules/vartable'
 include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { VCFTABLE                  } from '../modules/vcftable'
 
+include { ANNOTATION                } from '../subworkflows/annotation'
+
 include { MULTIQC                   } from '../modules/multiqc'
 
 
@@ -90,10 +92,12 @@ workflow CALL_TRUTH {
         
         GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome)
     } else {
+
         HC_TRUTH(INDEX.out.bam_file_w_index, reference_genome, bedfile)
         INDEX_VCF(HC_TRUTH.out.vcf_file, 'GATK')
-        VARTABLE(INDEX_VCF.out.vcf_w_index, 'GATK')
         NORMALISE_VCF(INDEX_VCF.out.vcf_w_index, reference_genome, 'GATK')
+        ANNOTATION(NORMALISE_VCF.out.norm_vcf)
+        VARTABLE(ANNOTATION.out.annotated_vcf, 'GATK')
     }
 
     MOSDEPTH(INDEX.out.bam_file_w_index, bedfile, "deduplicated")
