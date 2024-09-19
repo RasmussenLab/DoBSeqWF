@@ -44,7 +44,7 @@ workflow PINPOINT {
         vartables,
         decode_table,
         'GATK')
-    VARTABLE_PINS(PINPY.out.vcf_all_pins.flatten())
+    VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
 
     emit:
     pinned_variants = PINPY.out.lookup_table

@@ -41,7 +41,7 @@ class VcfMerger:
                 raise Exception(f"Error running bcftools tabix. Input file: {input_file}")
 
     def merge_files(self, force_samples: bool = False) -> None:
-        merge_method = "AC:join,AF:join,AN:join,BaseQRankSum:join,DP:join,FS:join,MLEAC:join,MLEAF:join,MQ:join,MQRankSum:join,QD:join,ReadPosRankSum:join,SOR:join"
+        merge_method = "AC:join,AF:join,AN:join,DP:join,FS:join,MLEAC:join,MLEAF:join,MQ:join,MQRankSum:join,QD:join,ReadPosRankSum:join,SOR:join"
         if force_samples:
             # Force merge of all samples AND avoid merge of multiallelic sites.
             cmd = ["bcftools", "merge", "--info-rules", merge_method, "-o", str(self.tmpdir / "tmp_merge.vcf"), "--merge", "none", "--force-samples"] + [str(input_file) for input_file in self.input_files]
@@ -115,8 +115,6 @@ def get_variants_from_pool(variant_table: Path) -> Set[str]:
         for line in fin:
             var_info = line.strip().split('\t')
             CHROM,POS,_,REF,ALT = var_info[0:5]
-            if len(ALT) > 1 or len(REF) > 1:
-                continue
             variants.add(f"{CHROM}:{POS}:{REF}:{ALT}")
 
     return variants
