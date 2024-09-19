@@ -5,6 +5,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+include { BAM                       } from '../modules/bam'
 include { SUBSET                    } from '../modules/subset'
 include { ADDREADGROUP              } from '../modules/addreadgroup'
 include { MARKDUPLICATES_FAST       } from '../modules/markduplicates_fast'
@@ -44,34 +45,44 @@ workflow CALL_TRUTH {
 
     main:
 
-    // Target regions extraction from truth wgs bam file
-    bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
+    if (params.wgs_cram_subset == "") {
+        // Target regions extraction from truth wgs bam file
+        bedfile_bam_extraction_ch = Channel.fromPath(params.bedfile_bam_extraction).collect()
 
-    mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
-    g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
+        mills_ch = Channel.fromPath(params.mills + "*", checkIfExists: true).collect()
+        g1000_ch = Channel.fromPath(params.g1000 + "*", checkIfExists: true).collect()
 
-    // Subset alignment
-    SUBSET(cramtable, reference_genome, bedfile_bam_extraction_ch)
+        // Subset alignment
+        SUBSET(cramtable, reference_genome, bedfile_bam_extraction_ch)
 
-	ADDREADGROUP(SUBSET.out.bam_file)
-    MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "")
-    CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
+        ADDREADGROUP(SUBSET.out.bam_file)
+        MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "")
+        CLEAN(MARKDUPLICATES_FAST.out.marked_bam_file)
 
-    // Add indel quality, ie. BI/BD tags
-    INDELQUAL(CLEAN.out.clean_bam_file, reference_genome)
+        // Add indel quality, ie. BI/BD tags
+        INDELQUAL(CLEAN.out.clean_bam_file, reference_genome)
 
-    // Base recalibration
-    BQSR(INDELQUAL.out.bam_file, reference_genome, mills_ch, g1000_ch)
-    
-    // Apply recalibration
-    APPLY_BQSR(BQSR.out.bqsr_file, reference_genome)
+        // Base recalibration
+        BQSR(INDELQUAL.out.bam_file, reference_genome, mills_ch, g1000_ch)
+        
+        // Apply recalibration
+        APPLY_BQSR(BQSR.out.bqsr_file, reference_genome)
 
-    // Store CRAM files
-    CRAM(APPLY_BQSR.out.corrected_bam_file, reference_genome)
-    CRAMTABLE(CRAM.out.cram_info.collect())
+        // Store CRAM files
+        CRAM(APPLY_BQSR.out.corrected_bam_file, reference_genome)
+        CRAMTABLE(CRAM.out.cram_info.collect())
+        bam_ch = APPLY_BQSR.out.corrected_bam_file
+    } else {
+        cramtable_ch = Channel
+            .fromPath(params.wgs_cram_subset)
+            .splitCsv(sep: '\t')
+            .map { row -> tuple(row[0], file(row[1])) }
+        BAM(cramtable_ch, reference_genome)
+        bam_ch = BAM.out.bam_file
+    }
 
     // Index
-    INDEX(APPLY_BQSR.out.corrected_bam_file)
+    INDEX(bam_ch)
 
     // Call variants DeepVariant
     if (params.deepvariant) {
@@ -92,7 +103,6 @@ workflow CALL_TRUTH {
         
         GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome)
     } else {
-
         HC_TRUTH(INDEX.out.bam_file_w_index, reference_genome, bedfile)
         INDEX_VCF(HC_TRUTH.out.vcf_file, 'GATK')
         NORMALISE_VCF(INDEX_VCF.out.vcf_w_index, reference_genome, 'GATK')
