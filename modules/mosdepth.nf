@@ -4,6 +4,8 @@ process MOSDEPTH {
     // cpus = { 16 * task.attempt }
     // memory = { 10.GB * task.attempt }
     // time = { 4.hour * task.attempt }
+    // Added additional high coverage thresholds:
+    // 5x allele depth (240), 10x allele depth (480), 30x allele depth (1440), 50x allele depth (2400)
 
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.per-base.bed.gz", mode:'copy'
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.regions.bed.gz", mode:'copy'
@@ -29,6 +31,7 @@ process MOSDEPTH {
     mosdepth                                \
         --threads ${task.cpus}              \
         --by ${targets_bed}                 \
+        --thresholds 1,10,30,240,480,1440,2400    \
         ${log_filename}                     \
         ${bam}
     """
