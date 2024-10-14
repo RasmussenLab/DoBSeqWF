@@ -19,15 +19,15 @@ process MARKDUPLICATES {
 
     script:
     def log_filename = log_suffix == "" ? "${sample_id}.dupMetric.log" : "${sample_id}_${log_suffix}.dupMetric.log"
-    def optical_only = optical_only_tag ? "--TAGGING_POLICY OpticalOnly" : ""
+    def optical_only = optical_only_tag ? "--duplicate-tagging-policy OpticalOnly" : ""
     """
-    gatk --java-options -Xmx16g MarkDuplicates  \
-        --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
+    gatk --java-options -Xmx16g MarkDuplicatesSpark  \
+        --optical-duplicate-pixel-distance 2500 \
         ${optical_only}                         \
-	    --TMP_DIR .                             \
-        --I ${bam_file}                         \
-        --M ${log_filename}                     \
-        --O ${sample_id}.marked.bam
+	    --tmp-dir .                             \
+        -I ${bam_file}                         \
+        -M ${log_filename}                     \
+        -O ${sample_id}.marked.bam
     """
     
     stub:
