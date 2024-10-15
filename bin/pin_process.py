@@ -253,14 +253,14 @@ def main():
     with open(output / 'combined_pinpoint_table.tsv', 'w') as fout:
         print('sample_id','gene_target','varid','CHROM','POS','REF','ALT','is_snv','is_acmg','is_lof','is_p','is_lofp','coding_uncertain','lof_gene','clnvar_gene','snpeff_gene','annotation','HGVSc','HGVSp','CLNSIG','acmg_category','column','AD_column','DP_site_column','VAF_column','row','AD_row','DP_site_row','VAF_row',file=fout,sep='\t')
         
-        for sample_id in decode:
-            col = decode[sample_id][0]
-            filepath = pinpoint_variant_tables / (f"{sample_id}_{col}_all_pins.tsv")
-            col_variants, col_info = get_variants(filepath,acmg)
-            
-            row = decode[sample_id][1]
+        for sample_id in decode:            
+            row = decode[sample_id][0]
             filepath = pinpoint_variant_tables / (f"{sample_id}_{row}_all_pins.tsv")
             row_variants, row_info = get_variants(filepath,acmg)
+
+            col = decode[sample_id][1]
+            filepath = pinpoint_variant_tables / (f"{sample_id}_{col}_all_pins.tsv")
+            col_variants, col_info = get_variants(filepath,acmg)
             
             assert col_variants == row_variants
 
