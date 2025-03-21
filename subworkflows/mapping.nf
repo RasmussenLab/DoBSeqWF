@@ -10,6 +10,7 @@ include { MOSDEPTH as RAW_DEPTH     } from '../modules/mosdepth'
 include { FLAGSTAT                  } from '../modules/flagstat'
 include { ALIGNMENT                 } from '../modules/alignment'
 include { MARKDUPLICATES_FAST       } from '../modules/markduplicates_fast'
+include { MARKDUPLICATES_SPARK      } from '../modules/markduplicates_spark'
 include { MARKDUPLICATES            } from '../modules/markduplicates'
 include { CLEAN                     } from '../modules/clean'
 include { ADDREADGROUP              } from '../modules/addreadgroup'
@@ -59,6 +60,10 @@ workflow MAPPING {
         MARKDUPLICATES_FAST(ADDREADGROUP.out.bam_file, "")
         markdup_ch = MARKDUPLICATES_FAST.out.marked_bam_file
         markdup_metrics_ch = MARKDUPLICATES_FAST.out.metrics_file
+    } else if (params.spark_markdup) {
+        MARKDUPLICATES_SPARK(ADDREADGROUP.out.bam_file, false, "")
+        markdup_ch = MARKDUPLICATES_SPARK.out.marked_bam_file
+        markdup_metrics_ch = MARKDUPLICATES_SPARK.out.metrics_file
     } else {
         MARKDUPLICATES(ADDREADGROUP.out.bam_file, false, "")
         markdup_ch = MARKDUPLICATES.out.marked_bam_file
