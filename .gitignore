@@ -178,3 +178,8 @@ nxf-tmp.*
 cramtable.tsv
 pooltable.tsv
 vcftable.tsv
+
+# pixi environments
+.pixi
+*.egg-info
+pixi.toml
