@@ -11,6 +11,7 @@ include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { PINPY                     } from '../modules/pinpy'
 include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
+include { MERGE_PINS                } from '../modules/mergepins'
 
 workflow PINPOINT {
     take:
@@ -45,6 +46,7 @@ workflow PINPOINT {
         decode_table,
         'GATK')
     VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
+    MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
 
     emit:
     pinned_variants = PINPY.out.lookup_table
