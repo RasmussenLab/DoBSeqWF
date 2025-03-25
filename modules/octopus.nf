@@ -26,9 +26,9 @@ process OCTOPUS {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/octopus/0.7.4/octopus.sif \
+    # singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/octopus/0.7.4/octopus.sif \
     octopus                                             \
-        --reference ${reference}                        \
+        --reference ${reference_genome}                        \
         --reads ${bam_file}                             \
         --regions-file ${bedfile}                       \
         --sequence-error-model PCR.NOVASEQ              \

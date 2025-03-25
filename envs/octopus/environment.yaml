@@ -1,0 +1,7 @@
+name: octopus
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::octopus=0.7.4

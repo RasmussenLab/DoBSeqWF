@@ -26,7 +26,7 @@ process DEEPVARIANT {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/deepvariant/1.5.0/deepvariant_1.5.0.sif \
+    # singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/deepvariant/1.5.0/deepvariant_1.5.0.sif \
     run_deepvariant \
         --ref=${db} \
         --reads=$bam_file \
