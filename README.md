@@ -11,7 +11,7 @@ conda install nextflow
 ### 2. In a clean folder - clone this repository:
 
 ```Bash
-git clone https://github.com/madscort/DoBSeqWF.git .
+git clone https://github.com/RasmussenLab/DoBSeqWF.git .
 ```
 
 ### 3. Run pipeline without any data (dry-run):
