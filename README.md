@@ -1,6 +1,6 @@
-# DoBSeq Nextflow Pipeline
+# DoBSeq Workflow
 
-## General usage outside NGC-HPC:
+## General usage:
 
 ### 1. Install nextflow [manually](https://www.nextflow.io/docs/latest/getstarted.html) or using conda:
 
@@ -26,8 +26,9 @@ nextflow run main.nf -profile (standard/esrum/ngc),test -stub
 nextflow run main.nf -profile (standard/esrum),test
 ```
 
-### 5. Run pipeline with input data (see test data for file contents):
-
+### 5. Run pipeline with input data:
+The pipeline has multiple optional configurations found in ```nextflow.config```.
+Configurations can be supplied as a ```config.json``` and run with ```nextflow run main.nf -profile (standard/esrum) -params-file config.json```, or directly from the commandline:
 ```Bash
 nextflow run main.nf                                       \
   -profile (standard/esrum/ngc)                            \
@@ -37,6 +38,71 @@ nextflow run main.nf                                       \
   --bedfile <path to bedfile with target regions>          \
   --ploidy <integer>
 ```
+The ```pooltable.tsv``` should connect (user assigned) pool id's to input FASTQ files; one entry for each pool.
+```Bash
+pool_row_1  path/to/sample1_R1.fq.gz  path/to/sample1_R2.fq.gz
+pool_column_1  path/to/sample2_R1.fq.gz  path/to/sample2_R2.fq.gz
+```
+The ```decodetable.tsv``` should map (user assigned) individual id's in the matrix to the corresponding row and column id's of each pool; one entry for each element in the matrix.
+```Bash
+individual1  pool_row_1  pool_column_1
+```
+### 6. Pipeline output
+The workflow will output a results folder containing multiple config dependent output files:
+```Bash
+results
+├── pinpointables.vcf           # Merged VCF file containing all assigned variants
+├── cram/                       # CRAM files for each pool
+├── logs/                       # Log files for each process
+├── variants/                   # VCF files for each pool
+├── variant_tables/             # TSV files converted from pool VCFs
+└── pinpoint_variants/
+    ├── all_pins/               # All pinpointables for each sample in individual vcfs (*note)
+    ├── unique_pins/            # All unique pinpointables for each sample in individual vcfs (*note)
+    ├── *_merged.vcf.gz         # All pinpointables for all samples in a single vcf without sample information
+    ├── summary.tsv             # Variant counts for each sample
+    └── lookup.tsv              # Variant to sample lookup table
+```
+A central files is the ```pinpointables.vcf```. This file contains all individually assigned variants. Since each variant contains information from two pools, these a presented as the sample columns: ROW and COLUMN.
+
+# Workflow repository contents:
+
+```Bash
+DoBSeqWF                                    
+├── LICENSE
+├── VERSION
+├── README.md
+├── assets
+│   ├── data
+│   │   ├── reference_genomes
+│   │   │   └── small
+│   │   │       └── small_reference.*
+│   │   └── test_data
+│   │       ├── coordtable.tsv
+│   │       ├── decodetable.tsv
+│   │       ├── pools
+│   │       │   └── *.fq.gz
+│   │       ├── pooltable.tsv
+│   │       ├── snvlist.tsv
+│   │       └── target_calling.bed
+│   └── helper_scripts
+│       └── simulator.py                  # Script for simulating minimal pipeline data
+├── bin                                   # Executable pipeline scripts
+│   └── <script>.*
+├── conf
+│   └── profiles.config                   # Configuration profiles for compute environments
+├── envs
+│   └── <name>/
+│       └── environment.yaml              # Conda environment definitions
+├── main.nf                               # Main workflow
+├── modules/
+│   └── <module>.nf                       # Module scripts
+├── subworkflows/
+│   └── <subworkflow>.nf                  # Module scripts
+├── next.pbs                              # Helper script for running on NGC-HPC
+└── nextflow.config                       # Workflow parameters
+```
+
 
 ## Usage on NGC-HPC
 
@@ -164,43 +230,4 @@ tail nextflow.log
 ```
 
 If the pipeline fails - it is likely due to resource constraints. Adjust as needed in the conf/profiles.config file under NGC, and rerun the PBS script. Be aware that any direct edits of the workflow scripts, ie. modules and subworkflows, can lead to complete re-run of the pipeline.
-
-
-# Workflow repository contents:
-
-```Bash
-DoBSeqWF                                    
-├── LICENSE
-├── VERSION
-├── README.md
-├── assets
-│   ├── data
-│   │   ├── reference_genomes
-│   │   │   └── small
-│   │   │       └── small_reference.*
-│   │   └── test_data
-│   │       ├── coordtable.tsv
-│   │       ├── decodetable.tsv
-│   │       ├── pools
-│   │       │   └── *.fq.gz
-│   │       ├── pooltable.tsv
-│   │       ├── snvlist.tsv
-│   │       └── target_calling.bed
-│   └── helper_scripts
-│       └── simulator.py                  # Script for simulating minimal pipeline data
-├── bin                                   # Executable pipeline scripts
-│   └── <script>.*
-├── conf
-│   └── profiles.config                   # Configuration profiles for compute environments
-├── envs
-│   └── <name>/
-│       └── environment.yaml              # Conda environment definitions
-├── main.nf                               # Main workflow
-├── modules/
-│   └── <module>.nf                       # Module scripts
-├── subworkflows/
-│   └── <subworkflow>.nf                  # Module scripts
-├── next.pbs                              # Helper script for running on NGC-HPC
-└── nextflow.config                       # Workflow parameters
-```
 
