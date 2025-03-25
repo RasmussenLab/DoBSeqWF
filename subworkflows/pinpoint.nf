@@ -10,6 +10,7 @@ include { VARTABLE                  } from '../modules/vartable'
 include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { PINPY                     } from '../modules/pinpy'
 include { FILTER_VARIANTS           } from '../modules/filter_variants'
+include { DISCARD                   } from '../modules/discard'
 include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
 include { MERGE_PINS                } from '../modules/mergepins'
@@ -38,12 +39,11 @@ workflow PINPOINT {
     } else {
         vcf_ch = NORMALISE_VCF.out.norm_vcf
     }
+    
     vcf_ch
         .map { sample, vcf -> vcf }
         .collect()
         .set { norm_vcfs }
-    
-    model_class.view()
     
     if (params.filter) {
         FILTER_VARIANTS(
@@ -54,18 +54,34 @@ workflow PINPOINT {
             params.filter_method,
             params.filter_indels
         )
+        if (params.discard_filtered) {
+            DISCARD(FILTER_VARIANTS.out.filtered_vcfs.flatten())
+            final_vcfs = DISCARD.out.vcf_file
+        } else {
+            final_vcfs = FILTER_VARIANTS.out.filtered_vcfs
+        }  
+    } else {
+        final_vcfs = vcf_ch
     }
     
-    VARTABLE(vcf_ch, 'GATK')
+    final_vcfs
+        .map { file -> 
+        def baseName = file.baseName.replaceAll(/\.GATK$/, '')
+        return tuple(baseName, file)
+        }
+        .set { vartable_vcfs }
+    
+    VARTABLE(vartable_vcfs, 'GATK')
     VARTABLE.out.vartable
         .map { sample, vartable -> vartable }
         .collect()
         .set { vartables }
     PINPY(
-        norm_vcfs,
+        final_vcfs.collect(),
         vartables,
         decode_table,
         'GATK')
+    
     VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
     MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
 
