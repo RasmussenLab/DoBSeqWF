@@ -1,8 +1,7 @@
-name: bcftools
+name: deepvariant
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bcftools=1.16
-  - python=3.9
+  - bioconda::deepvariant=1.5.0

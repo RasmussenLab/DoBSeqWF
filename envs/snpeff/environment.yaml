@@ -1,8 +1,7 @@
-name: bcftools
+name: snpeff
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bcftools=1.16
-  - python=3.9
+  - snpeff=4.3

@@ -6,7 +6,7 @@
 
 include { INTERVALS                 } from '../modules/intervals'
 include { HAPLOTYPECALLER           } from '../modules/haplotypecaller'
-include { HAPLOTYPECALLER_JOINT     } from '../modules/haplotypecaller_joint'
+include { HAPLOTYPECALLER_SPLIT     } from '../modules/haplotypecaller_split'
 include { LOFREQ                    } from '../modules/lofreq'
 include { DEEPVARIANT               } from '../modules/deepvariant'
 include { CRISP                     } from '../modules/crisp'
@@ -14,6 +14,7 @@ include { OCTOPUS                   } from '../modules/octopus'
 include { FILTER                    } from '../modules/filter'
 include { GENOMICSDB                } from '../modules/genomicsdb'
 include { GENOTYPEGVCF              } from '../modules/genotypegvcf'
+include { GENOTYPEGVCF_SPLIT        } from '../modules/genotypegvcf_split'
 include { MERGEVCFS                 } from '../modules/mergevcfs'
 include { VCFTABLE                  } from '../modules/vcftable'
 
@@ -62,9 +63,11 @@ workflow CALLING {
             .set { bam_file_w_interval }
         
         INTERVALS(reference_genome, bedfile)
-        HAPLOTYPECALLER(bam_file_w_interval, reference_genome, INTERVALS.out.target_list)
 
-        HAPLOTYPECALLER.out.vcf_file
+        HAPLOTYPECALLER_SPLIT(bam_file_w_interval, reference_genome, INTERVALS.out.target_list)
+        GENOTYPEGVCF_SPLIT(HAPLOTYPECALLER_SPLIT.out.gvcf_file, reference_genome)
+
+        GENOTYPEGVCF_SPLIT.out.vcf_file
             .groupTuple()
             .map { pool_id, vcf_file -> tuple(pool_id, vcf_file.sort()) }
             .set { vcf_by_intervals }
@@ -74,22 +77,14 @@ workflow CALLING {
             .mix(lofreq_info)
             .collect())
         hc_ch = MERGEVCFS.out.vcf_file
+
     } else {
-        if (params.gatk_joint_calling) {
-            HAPLOTYPECALLER_JOINT(bam_file_w_index, reference_genome, bedfile)
-            GENOMICSDB(HAPLOTYPECALLER_JOINT.out.gvcf_file.collect(),
-                    HAPLOTYPECALLER_JOINT.out.gvcf_index.collect(),
-                    bedfile)
-            
-            GENOTYPEGVCF(GENOMICSDB.out.gendb, reference_genome)
-            hc_ch = GENOTYPEGVCF.out.vcf_file
-        } else {
-            HAPLOTYPECALLER(bam_file_w_index, reference_genome, bedfile)
-            VCFTABLE(MERGEVCFS.out.vcf_info
-                .mix(lofreq_info)
-                .collect())
-            hc_ch = HAPLOTYPECALLER.out.vcf_file
-        }
+        HAPLOTYPECALLER(bam_file_w_index, reference_genome, bedfile)
+        GENOTYPEGVCF(HAPLOTYPECALLER.out.gvcf_file, reference_genome)
+        VCFTABLE(GENOTYPEGVCF.out.vcf_info
+            .mix(lofreq_info)
+            .collect())
+        hc_ch = GENOTYPEGVCF.out.vcf_file
     }
 
     emit:

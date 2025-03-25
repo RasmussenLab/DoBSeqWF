@@ -1,8 +1,7 @@
-name: bcftools
+name: octopus
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bcftools=1.16
-  - python=3.9
+  - bioconda::octopus=0.7.4
