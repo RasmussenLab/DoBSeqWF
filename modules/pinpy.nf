@@ -29,7 +29,12 @@ process PINPY {
 
     stub:
     """
-    mkdir pinpoint_variants
+    mkdir -p pinpoint_variants/all_pins/ pinpoint_variants/unique_pins/
     touch pinpoint_variants/lookup.tsv
+    for vcf in ${vcf_files}; do
+        touch pinpoint_variants/all_pins/\$(basename \$vcf)
+        touch pinpoint_variants/unique_pins/\$(basename \$vcf)
+        touch pinpoint_variants/unique_pins/\$(basename \$vcf).gz
+    done
     """
 }

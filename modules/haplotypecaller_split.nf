@@ -55,8 +55,9 @@ process HAPLOTYPECALLER_SPLIT {
     """
 
     stub:
+    def id = interval ? "${sample_id}.${interval}" : sample_id
     """
-    touch "${id}.GATK.g.vcf.gz" "${id}.g.haplotypecaller.log"
+    touch "${id}.GATK.g.vcf.gz" "${id}.GATK.g.vcf.gz.tbi" "${id}.g.haplotypecaller.log"
     """
 }
 

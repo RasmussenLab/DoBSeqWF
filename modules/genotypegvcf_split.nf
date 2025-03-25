@@ -36,6 +36,7 @@ process GENOTYPEGVCF_SPLIT {
     """
 
     stub:
+    def id = interval ? "${sample_id}.${interval}" : sample_id
     """
     touch "${id}.GATK.vcf.gz" "${id}.genotypegvcf.log"
     """

@@ -183,3 +183,5 @@ vcftable.tsv
 .pixi
 *.egg-info
 pixi.toml
+pixi.lock
+.DS_Store
