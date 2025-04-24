@@ -2,9 +2,7 @@ process INDELQUAL {
     tag "Lofreq indelqual - $sample_id"
     // Tag indel quality using Lofreq - indelqual
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/lofreq/environment.yaml"
 
     publishDir "${params.outputDir}/log/lofreq_indelqual/", pattern: "${sample_id}.lofreq.iq.log", mode:'copy'
 

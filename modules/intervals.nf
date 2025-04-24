@@ -1,6 +1,8 @@
 process INTERVALS {
     tag "BedFileToIntervalList"
 
+    conda "$projectDir/envs/gatk4/environment.yaml"
+
     input:
     path reference_genome
     path bedfile

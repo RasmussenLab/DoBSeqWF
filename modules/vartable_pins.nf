@@ -1,5 +1,7 @@
 process VARTABLE_PINS {
-    
+
+    conda "$projectDir/envs/gatk4/environment.yaml"
+
     publishDir "${params.outputDir}/pinpoint_variant_tables/", mode:'copy'
 
     input:

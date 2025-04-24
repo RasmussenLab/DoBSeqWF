@@ -2,6 +2,8 @@ process DROP_PL {
     tag "$sample_id"
     // Drop PL tag from VCF file.
 
+    conda "$projectDir/envs/bcftools/environment.yaml"
+
     input:
     tuple val(sample_id), path(vcf_file, stageAs: "input/*"), path(index, stageAs: "input/*")
     val caller

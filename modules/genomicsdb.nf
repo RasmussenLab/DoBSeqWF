@@ -2,9 +2,7 @@ process GENOMICSDB {
     tag "MERGE_GVCF"
     // Merge gVCF files into a single GenomicsDB
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     publishDir "${params.outputDir}/log/", pattern: "genomicsdb.log", mode:'copy'
     publishDir "${params.outputDir}/", pattern: "./genomicsdb", mode:'copy'

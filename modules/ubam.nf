@@ -2,9 +2,7 @@ process UBAM {
     tag "FastQ to uBAM - $sample_id"
     // Convert FastQ files to unaligned BAM files.
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     input:
     tuple val(sample_id), path(reads)

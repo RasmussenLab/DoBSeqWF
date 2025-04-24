@@ -6,6 +6,8 @@ process SNPEFF {
     // -lof option to add loss-of-function annotations.
     // -noMotif avoids adding motif annotations.
 
+    conda "$projectDir/envs/snpeff/environment.yaml"
+
     publishDir "${params.outputDir}/log/snpeff/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/log/snpeff/stats/", pattern: "${sample_id}.${caller}_snpeff_stats.csv", mode:'copy'
 

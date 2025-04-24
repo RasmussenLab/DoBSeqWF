@@ -1,12 +1,9 @@
 process GROUP_UMI {
     tag "Group reads by UMI - $sample_id"
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/fgbio/environment.yaml"
 
     publishDir "${params.outputDir}/log/group_umi/", pattern: "${sample_id}.family_size_histogram.txt", mode:'copy'
-
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: 'raw/*')

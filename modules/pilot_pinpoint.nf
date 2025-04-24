@@ -1,8 +1,6 @@
 process PILOT_PINPOINT {
 
-    // cpus = { 2 * task.attempt }
-    // memory = { 4.GB * task.attempt }
-    // time = { 1.hour * task.attempt }
+    conda "$projectDir/envs/r_env/environment.yaml"
 
     publishDir "${params.outputDir}/pinned_variants/", pattern: "*.tsv", mode:'copy'
     publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'

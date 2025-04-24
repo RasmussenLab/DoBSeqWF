@@ -5,9 +5,7 @@ process DEEPVARIANT {
     // Unfortunately env module on NGC is not working well. This makes the script not-portable.
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "run_deepvariant" directly.
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/deepvar/environment.yaml"
 
     publishDir "${params.outputDir}/log/deepvariant/", pattern: "${sample_id}.DV.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.DV.vcf.gz", mode:'copy'

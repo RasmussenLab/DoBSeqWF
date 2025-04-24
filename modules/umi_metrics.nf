@@ -15,9 +15,7 @@ process UMI_METRICS {
     // SS: single-stranded tag families where membership is defined by genome coordinates, strand and UMI; ie. 50/A and 50/B are considered different tag families.
     // DS: double-stranded tag families where membership is collapsed across single-stranded tag families from the same double-stranded source molecule; i.e. 50/A and 50/B become one family
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/fgbio/environment.yaml"
 
     publishDir "${params.outputDir}/log/umi_metrics/logs/", pattern: "${sample_id}.*.txt", mode:'copy'
     publishDir "${params.outputDir}/log/umi_metrics/plots/", pattern: "${sample_id}.*.pdf", mode:'copy'

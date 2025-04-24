@@ -2,9 +2,7 @@ process HAPLOTYPECALLER_SPLIT {
     tag "HaplotypeCaller - $sample_id"
     // Call variants using GATK - HaplotypeCaller
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     publishDir "${params.outputDir}/log/haplotypecaller/${sample_id}/", pattern: "${sample_id}*.g.haplotypecaller.log", mode:'copy'
     publishDir "${params.outputDir}/variants/gvcf/${sample_id}/", pattern: "${sample_id}*.GATK.g.vcf.gz", mode:'copy'

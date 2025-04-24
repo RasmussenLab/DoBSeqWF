@@ -4,6 +4,8 @@ process NORMALISE_VCF {
     // 2. Left-aligns indels (standard for GATK).
     // 3. Checks refs against reference genome
 
+    conda "$projectDir/envs/bcftools/environment.yaml"
+
     publishDir "${params.outputDir}/log/normalise_vcf/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/normalised_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
 

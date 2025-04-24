@@ -2,9 +2,7 @@ process HS_METRICS {
     tag "$sample_id"
     // Collect HSMetrics for bam file
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     publishDir "${params.outputDir}/log/hs_metrics/", pattern: "${sample_id}*.hs.txt", mode:'copy'
 

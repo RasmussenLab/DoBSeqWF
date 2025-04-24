@@ -1,9 +1,8 @@
 process ALIGNMENT {
     tag "Alignment - $sample_id"
     // Align reads to the reference genome using BWA, convert to BAM and sort.
-    // cpus = { 15 * task.attempt }
-    // memory = { 56.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+
+    conda "$projectDir/envs/bwa/environment.yaml"
 
     publishDir "${params.outputDir}/log/mapping/", pattern: "${sample_id}.log", mode:'copy'
 

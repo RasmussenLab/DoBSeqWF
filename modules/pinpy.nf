@@ -1,8 +1,6 @@
 process PINPY {
 
-    // cpus = { 2 * task.attempt }
-    // memory = { 4.GB * task.attempt }
-    // time = { 1.hour * task.attempt }
+    conda "$projectDir/envs/bcftools/environment.yaml"
 
     publishDir "${params.outputDir}/", mode:'copy'
 

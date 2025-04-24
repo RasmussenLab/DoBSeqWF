@@ -2,9 +2,7 @@ process MARKDUPLICATES_FAST {
     tag "Mark duplicates - $sample_id"
     // Mark duplicate reads in BAM files
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/sambamba/environment.yaml"
 
     publishDir "${params.outputDir}/log/markdup_sambamba/", pattern: "${sample_id}*.log", mode:'copy'
 

@@ -2,9 +2,7 @@ process GENOTYPEGVCF_SPLIT {
     tag "GenotypeGVCFs"
     // Call variants on multisample gVCF db
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     publishDir "${params.outputDir}/log/genotypegvcf/${sample_id}/", pattern: "${sample_id}*.genotypegvcf.log", mode:'copy'
 

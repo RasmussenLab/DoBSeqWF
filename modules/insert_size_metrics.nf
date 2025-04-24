@@ -2,9 +2,7 @@ process INSERT_SIZE_METRICS {
     tag "$sample_id"
     // Collect insert size metrics for bam file
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
 
     publishDir "${params.outputDir}/log/insert_size_metrics/", pattern: "${sample_id}*.insert.txt", mode:'copy'
     publishDir "${params.outputDir}/log/insert_size_metrics/", pattern: "${sample_id}.pdf", mode:'copy'
