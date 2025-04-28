@@ -1,8 +1,7 @@
 process PINPY {
 
-    // cpus = { 2 * task.attempt }
-    // memory = { 4.GB * task.attempt }
-    // time = { 1.hour * task.attempt }
+    conda "$projectDir/envs/pinpy/environment.yaml"
+    container params.container.pinpy
 
     publishDir "${params.outputDir}/", mode:'copy'
 
@@ -17,6 +16,7 @@ process PINPY {
     path "pinpoint_variants/lookup.tsv", emit: lookup_table
     path "pinpoint_variants/all_pins/*.vcf", emit: vcf_all_pins
     path "pinpoint_variants/unique_pins/*.vcf", emit: vcf_unique_pins
+    path "pinpoint_variants/unique_pins/*.vcf.gz", emit: vcf_unique_2d_pins
 
     script:
     """
@@ -28,7 +28,12 @@ process PINPY {
 
     stub:
     """
-    mkdir pinpoint_variants
+    mkdir -p pinpoint_variants/all_pins/ pinpoint_variants/unique_pins/
     touch pinpoint_variants/lookup.tsv
+    for vcf in ${vcf_files}; do
+        touch pinpoint_variants/all_pins/\$(basename \$vcf)
+        touch pinpoint_variants/unique_pins/\$(basename \$vcf)
+        touch pinpoint_variants/unique_pins/\$(basename \$vcf).gz
+    done
     """
 }

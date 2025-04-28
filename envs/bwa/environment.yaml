@@ -1,0 +1,8 @@
+name: bwa
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - samtools=1.18
+  - bwa-mem2=2.2.1

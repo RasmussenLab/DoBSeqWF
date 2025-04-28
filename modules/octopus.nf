@@ -6,9 +6,8 @@ process OCTOPUS {
     // Unfortunately env module on NGC is not working well. This makes the script not-portable.
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "octopus" directly.
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/octopus/environment.yaml"
+    container params.container.octopus
 
     publishDir "${params.outputDir}/log/octopus/", pattern: "${sample_id}.octopus.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.octopus.vcf.gz", mode:'copy'
@@ -26,9 +25,9 @@ process OCTOPUS {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/octopus/0.7.4/octopus.sif \
+    # singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/octopus/0.7.4/octopus.sif \
     octopus                                             \
-        --reference ${reference}                        \
+        --reference ${reference_genome}                        \
         --reads ${bam_file}                             \
         --regions-file ${bedfile}                       \
         --sequence-error-model PCR.NOVASEQ              \

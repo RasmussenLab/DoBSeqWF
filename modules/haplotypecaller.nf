@@ -1,50 +1,57 @@
 process HAPLOTYPECALLER {
-    tag "HaplotypeCaller - $sample_id - $interval"
+    tag "HaplotypeCaller - $sample_id"
     // Call variants using GATK - HaplotypeCaller
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
-    publishDir "${params.outputDir}/log/haplotypecaller/${sample_id}/", pattern: "${sample_id}*.haplotypecaller.log", mode:'copy'
-    publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
+
+    publishDir "${params.outputDir}/log/haplotypecaller/", pattern: "${sample_id}.g.haplotypecaller.log", mode:'copy'
+    publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.g.vcf.gz", mode:'copy'
 
     input:
-    tuple val(sample_id), path(bam_file), path(bam_index_file), val(interval)
+    tuple val(sample_id), path(bam_file), path(bam_index_file)
     path reference_genome
-    path interval_list
+    path bedfile
 
     output:
-    tuple val(sample_id), path("${sample_id}*.GATK.vcf.gz"), emit: vcf_file
-    path "${sample_id}_vcf.tsv", emit: vcf_info
-    path "${sample_id}*.haplotypecaller.log"
+    tuple val(sample_id), path("${sample_id}.GATK.g.vcf.gz"), path("${sample_id}.GATK.g.vcf.gz.tbi"), emit: gvcf_file
+    path "${sample_id}.g.haplotypecaller.log"
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
-    def id = interval ? "${sample_id}.${interval}" : sample_id
-    def add_intervals = interval ? "-L ${interval}" : ""
-    def add_intersection = interval ? "--interval-set-rule INTERSECTION" : ""
-    def publishDir = file(params.outputDir + "/variants/" + sample_id + ".GATK.vcf.gz")
     """
-    gatk HaplotypeCaller                                \
-        --max-reads-per-alignment-start 0               \
-        -R ${db}                                        \
-        -I ${bam_file}                                  \
-        -L ${interval_list}                             \
-        ${add_intervals}                                \
-        ${add_intersection}                             \
-        -O "${id}.GATK.vcf.gz"       \
-        -ploidy ${params.ploidy}                        \
-        --max-alternate-alleles 3                       \
-        > >(tee -a "${id}.haplotypecaller.log")  \
-        2> >(tee -a "${id}.haplotypecaller.log" >&2)
-    
-    echo -e "${sample_id}\t${publishDir}\tGATK" > "${sample_id}_vcf.tsv"
+    gatk --java-options "-Xmx8g -XX:-UsePerfData" HaplotypeCaller   \
+        -R ${db}                                                    \
+        -I ${bam_file}                                              \
+        -L ${bedfile}                                               \
+        -O "${sample_id}.GATK.g.vcf.gz"                             \
+        -ploidy ${params.ploidy}                                    \
+        -ERC GVCF                                                   \
+        -G StandardAnnotation                                       \
+        -G AS_StandardAnnotation                                    \
+        -G StandardHCAnnotation                                     \
+        -A GcContent                                                \
+        -A HmerIndelLength                                          \
+        -A IndelLength                                              \
+        -A AssemblyComplexity                                       \
+        -A LikelihoodRankSumTest                                    \
+        -A ClippingRankSumTest                                      \
+        -A HaplotypeFilteringAnnotation                             \
+        -A GenotypeSummaries                                        \
+        -A AlleleFraction                                           \
+        --disable-read-filter NotDuplicateReadFilter                \
+        --max-alternate-alleles 3                                   \
+        --max-num-haplotypes-in-population 1000                     \
+        --max-reads-per-alignment-start 0                           \
+        --create-output-variant-index                               \
+        --tmp-dir .                                                 \
+        > >(tee -a "${sample_id}.g.haplotypecaller.log")            \
+        2> >(tee -a "${sample_id}.g.haplotypecaller.log" >&2)
     """
 
     stub:
-    def id = interval ? "${sample_id}.${interval}" : sample_id
     """
-    touch "${id}.GATK.vcf.gz" "${id}.haplotypecaller.log"
-    touch "${sample_id}_vcf.tsv"
+    touch "${sample_id}.GATK.g.vcf.gz" "${sample_id}.g.haplotypecaller.log"
     """
 }
+

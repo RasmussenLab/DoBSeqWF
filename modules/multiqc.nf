@@ -1,9 +1,8 @@
 process MULTIQC {
     tag "MultiQC everything"
 
-    // cpus = { 16 * task.attempt }
-    // memory = { 10.GB * task.attempt }
-    // time = { 4.hour * task.attempt }
+    conda "$projectDir/envs/multiqc/environment.yaml"
+    container params.container.multiqc
 
     publishDir "${params.outputDir}/log/multiqc/", mode:'copy'
 

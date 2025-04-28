@@ -1,9 +1,8 @@
 process APPLY_BQSR {
     tag "Apply score recalibration - $sample_id"
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*"), path(bqsr_table)

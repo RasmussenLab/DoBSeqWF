@@ -2,9 +2,8 @@ process MARKDUPLICATES {
     tag "Mark duplicates - $sample_id"
     // Mark duplicate reads in BAM files
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/markduplicates/", pattern: "${sample_id}*.log", mode:'copy'
 
@@ -21,10 +20,10 @@ process MARKDUPLICATES {
     def log_filename = log_suffix == "" ? "${sample_id}.dupMetric.log" : "${sample_id}_${log_suffix}.dupMetric.log"
     def optical_only = optical_only_tag ? "--duplicate-tagging-policy OpticalOnly" : ""
     """
-    gatk --java-options -Xmx16g MarkDuplicatesSpark  \
-        --optical-duplicate-pixel-distance 2500 \
+    gatk --java-options -Xmx16g MarkDuplicates  \
+        --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
         ${optical_only}                         \
-	    --tmp-dir .                             \
+	    --TMP_DIR .                             \
         -I ${bam_file}                         \
         -M ${log_filename}                     \
         -O ${sample_id}.marked.bam

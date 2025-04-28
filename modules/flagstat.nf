@@ -1,9 +1,8 @@
 process FLAGSTAT {
     tag "Flagstat - $sample_id"
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/samtools/environment.yaml"
+    container params.container.samtools
 
     publishDir "${params.outputDir}/log/flagstat/", pattern: "${sample_id}*.flagstat", mode:'copy'
 

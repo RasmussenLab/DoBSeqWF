@@ -1,8 +1,7 @@
 process TEST {
 
-    // cpus = { 2 * task.attempt }
-    // memory = { 4.GB * task.attempt }
-    // time = { 1.hour * task.attempt }
+    conda "$projectDir/envs/pinpy/environment.yaml"
+    container params.container.pinpy
 
     publishDir "${params.outputDir}/test/", pattern: "test.*", mode:'copy'
 

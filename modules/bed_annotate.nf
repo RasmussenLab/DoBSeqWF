@@ -2,6 +2,9 @@ process BED_ANNOTATE {
     tag "$sample_id"
     // Annotate VCF by third column in BED file
 
+    conda "$projectDir/envs/bcftools/environment.yaml"
+    container params.container.bcftools
+
     publishDir "${params.outputDir}/log/bed_annotate/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
 
     input:

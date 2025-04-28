@@ -7,7 +7,6 @@ if (!require('tidyr')) install.packages('tidyr', repos = package_repository); li
 if (!require('purrr')) install.packages('purrr', repos = package_repository); library('purrr')
 if (!require('ggplot2')) install.packages('ggplot2', repos = package_repository); library('ggplot2')
 if (!require('stringr')) install.packages('stringr', repos = package_repository); library('stringr')
-if (!require('optparse')) install.packages('optparse', repos = package_repository); library('optparse')
 
 # 2024-02-15 christian
 # edit: mads
@@ -18,16 +17,13 @@ pooltable_dir <- "assets/test_data/simulated_samples/sim_2x2/sampletable.tsv"
 decodetable_dir <- "./assets/test_data/simulated_samples/sim_2x2/decodetable.tsv"
 out_folder <- "./results/pinned"
 
-option_list <- list(
-  make_option(c("-n", "--nextflow"), help = "Script running in Nextflow [default: false]",
-              type = "logical", action = "store_true", default = FALSE)
-)
+nextflow = True
 
 opt_parser <- OptionParser(option_list=option_list)
 args <- parse_args(opt_parser)
 
 # Nextflow defined paths
-if (args$nextflow) {
+if (nextflow) {
   vcf_folder <- "variants"
   pooltable_dir <- "pooltable.tsv"
   decodetable_dir <- "decodetable.tsv"

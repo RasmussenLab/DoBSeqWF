@@ -136,13 +136,8 @@ workflow {
 
 // Call variants in WGS data from CRAM files
 // Requires a tsv with CRAM files
-workflow truthset {
-    cramtable_ch = Channel
-        .fromPath(params.cramtable)
-        .splitCsv(sep: '\t')
-        .map { row -> tuple(row[0], file(row[1])) }
-    
-    CALL_TRUTH(cramtable_ch, reference_genome_ch, bedfile_ch)
+workflow truthset {    
+    CALL_TRUTH(reference_genome_ch, bedfile_ch)
 }
 
 workflow annotate {

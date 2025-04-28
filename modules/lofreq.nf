@@ -2,9 +2,8 @@ process LOFREQ {
     tag "Lofreq call - $sample_id"
     // Call variants using Lofreq - call parallel
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/lofreq/environment.yaml"
+    container params.container.lofreq
 
     publishDir "${params.outputDir}/log/lofreq/", pattern: "${sample_id}.lofreq.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'

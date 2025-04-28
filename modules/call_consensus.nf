@@ -1,9 +1,8 @@
 process CALL_CONSENSUS {
     tag "Call consensus reads - $sample_id"
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/fgbio/environment.yaml"
+    container params.container.fgbio
 
     input:
     tuple val(sample_id), path(bam_file)

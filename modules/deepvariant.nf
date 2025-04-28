@@ -5,9 +5,8 @@ process DEEPVARIANT {
     // Unfortunately env module on NGC is not working well. This makes the script not-portable.
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "run_deepvariant" directly.
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/deepvar/environment.yaml"
+    container params.container.deepvariant
 
     publishDir "${params.outputDir}/log/deepvariant/", pattern: "${sample_id}.DV.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.DV.vcf.gz", mode:'copy'
@@ -26,7 +25,7 @@ process DEEPVARIANT {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/deepvariant/1.5.0/deepvariant_1.5.0.sif \
+    # singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/deepvariant/1.5.0/deepvariant_1.5.0.sif \
     run_deepvariant \
         --ref=${db} \
         --reads=$bam_file \
