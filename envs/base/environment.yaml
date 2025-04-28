@@ -1,9 +1,8 @@
-name: misc
+name: dswf_base
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - samtools=1.18
-  - bwa-mem2=2.2.1
-  - gatk4=4.3.0.0
+  - bcftools=1.19
+  - python=3.9
