@@ -7,6 +7,7 @@ process OCTOPUS {
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "octopus" directly.
     
     conda "$projectDir/envs/octopus/environment.yaml"
+    container params.container.octopus
 
     publishDir "${params.outputDir}/log/octopus/", pattern: "${sample_id}.octopus.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.octopus.vcf.gz", mode:'copy'

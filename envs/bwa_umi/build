@@ -1,0 +1,1 @@
+docker buildx build --platform linux/amd64,linux/arm64,windows/amd64 -t madscort/dswf_bwa_umi:1.0 --push .

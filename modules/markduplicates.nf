@@ -3,6 +3,7 @@ process MARKDUPLICATES {
     // Mark duplicate reads in BAM files
     
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/markduplicates/", pattern: "${sample_id}*.log", mode:'copy'
 

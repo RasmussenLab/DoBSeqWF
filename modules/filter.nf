@@ -1,6 +1,7 @@
 process FILTER {
 
     conda "$projectDir/envs/bcftools/environment.yaml"
+    container params.container.bcftools
 
     publishDir "${params.outputDir}/variants/filtered/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'
 

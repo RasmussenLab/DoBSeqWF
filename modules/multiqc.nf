@@ -2,6 +2,7 @@ process MULTIQC {
     tag "MultiQC everything"
 
     conda "$projectDir/envs/multiqc/environment.yaml"
+    container params.container.multiqc
 
     publishDir "${params.outputDir}/log/multiqc/", mode:'copy'
 

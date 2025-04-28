@@ -2,9 +2,8 @@ process COMBINEGVCFS {
     tag "COMBINE_GVCF"
     // Merge gVCF files into a single GenomicsDB
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/", pattern: "genomicsdb.log", mode:'copy'
     publishDir "${params.outputDir}/splits/", pattern: "cohort.${interval}.g.vcf.gz", mode:'copy'

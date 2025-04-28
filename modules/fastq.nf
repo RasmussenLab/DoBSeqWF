@@ -3,6 +3,7 @@ process FASTQ {
     // Convert unaligned uBAM files to FastQ.
     
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     input:
     tuple val(sample_id), path(bam_file)

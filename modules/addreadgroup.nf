@@ -2,6 +2,7 @@ process ADDREADGROUP {
     tag "Add read group - $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*")

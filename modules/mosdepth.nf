@@ -5,6 +5,7 @@ process MOSDEPTH {
     // 5x allele depth (240), 10x allele depth (480), 30x allele depth (1440), 50x allele depth (2400)
 
     conda "$projectDir/envs/mosdepth/environment.yaml"
+    container params.container.mosdepth
 
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.per-base.bed.gz", mode:'copy'
     publishDir "${params.outputDir}/log/mosdepth/", pattern: "${sample_id}*.regions.bed.gz", mode:'copy'

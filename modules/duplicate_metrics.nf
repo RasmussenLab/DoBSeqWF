@@ -1,12 +1,12 @@
 process DUPLICATE_METRICS {
     tag "$sample_id"
     // Mark duplicate reads in BAM files
-    
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/duplicate_metrics/", pattern: "${sample_id}*.txt", mode:'copy'
+
 
     input:
     tuple val(sample_id), path(bam_file)

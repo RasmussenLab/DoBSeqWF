@@ -2,6 +2,7 @@ process INDEX {
     tag "Index bam file - $sample_id"
 
     conda "$projectDir/envs/samtools/environment.yaml"
+    container params.container.samtools
 
     input:
     tuple val(sample_id), path(bam_file)

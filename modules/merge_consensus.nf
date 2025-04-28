@@ -2,6 +2,7 @@ process MERGE_CONSENSUS {
     tag "Merge consensus bam files - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*"), path(ubam_file, stageAs: "raw/*")

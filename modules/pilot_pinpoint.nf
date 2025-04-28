@@ -1,6 +1,7 @@
 process PILOT_PINPOINT {
 
     conda "$projectDir/envs/r_env/environment.yaml"
+    container params.container.r_env
 
     publishDir "${params.outputDir}/pinned_variants/", pattern: "*.tsv", mode:'copy'
     publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'
@@ -17,8 +18,7 @@ process PILOT_PINPOINT {
 
     script:
     """
-    pilot_pinpoint.R \
-        --nextflow
+    pilot_pinpoint.R
     """
 
     stub:

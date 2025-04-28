@@ -1,7 +1,8 @@
-name: bcftools
+name: dswf_pinpy
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bcftools=1.16
+  - bcftools=1.19
+  - python=3.9

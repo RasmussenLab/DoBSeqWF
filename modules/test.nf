@@ -1,6 +1,7 @@
 process TEST {
 
-    conda "$projectDir/envs/bcftools/environment.yaml"
+    conda "$projectDir/envs/pinpy/environment.yaml"
+    container params.container.pinpy
 
     publishDir "${params.outputDir}/test/", pattern: "test.*", mode:'copy'
 

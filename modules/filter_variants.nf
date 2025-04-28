@@ -1,6 +1,7 @@
 process FILTER_VARIANTS {
 
-    conda "$projectDir/envs/filter/environment.yaml"
+    conda "$projectDir/envs/filter_variants/environment.yaml"
+    container params.container.filter_variants
 
     publishDir "${params.outputDir}/filtered_variants/", pattern: "*.vcf", mode:'copy'
 

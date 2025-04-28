@@ -3,6 +3,7 @@ process INDELQUAL {
     // Tag indel quality using Lofreq - indelqual
     
     conda "$projectDir/envs/lofreq/environment.yaml"
+    container params.container.lofreq
 
     publishDir "${params.outputDir}/log/lofreq_indelqual/", pattern: "${sample_id}.lofreq.iq.log", mode:'copy'
 

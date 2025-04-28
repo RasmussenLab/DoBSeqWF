@@ -3,6 +3,7 @@ process MARKDUPLICATES_FAST {
     // Mark duplicate reads in BAM files
     
     conda "$projectDir/envs/sambamba/environment.yaml"
+    container params.container.sambamba
 
     publishDir "${params.outputDir}/log/markdup_sambamba/", pattern: "${sample_id}*.log", mode:'copy'
 

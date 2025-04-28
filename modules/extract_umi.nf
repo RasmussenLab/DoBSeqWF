@@ -9,6 +9,7 @@ process EXTRACT_UMI {
     // Twist UMI adapters are 5 base pairs with a 2 base pair skip, resulting in the read structure 5M2S+T
 
     conda "$projectDir/envs/fgbio/environment.yaml"
+    container params.container.fgbio
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*")

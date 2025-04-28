@@ -6,6 +6,7 @@ process DEEPVARIANT {
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "run_deepvariant" directly.
 
     conda "$projectDir/envs/deepvar/environment.yaml"
+    container params.container.deepvariant
 
     publishDir "${params.outputDir}/log/deepvariant/", pattern: "${sample_id}.DV.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.DV.vcf.gz", mode:'copy'

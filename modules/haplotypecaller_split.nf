@@ -3,6 +3,7 @@ process HAPLOTYPECALLER_SPLIT {
     // Call variants using GATK - HaplotypeCaller
     
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/haplotypecaller/${sample_id}/", pattern: "${sample_id}*.g.haplotypecaller.log", mode:'copy'
     publishDir "${params.outputDir}/variants/gvcf/${sample_id}/", pattern: "${sample_id}*.GATK.g.vcf.gz", mode:'copy'

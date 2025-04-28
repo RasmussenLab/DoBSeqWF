@@ -2,6 +2,7 @@ process FLAGSTAT {
     tag "Flagstat - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
+    container params.container.samtools
 
     publishDir "${params.outputDir}/log/flagstat/", pattern: "${sample_id}*.flagstat", mode:'copy'
 

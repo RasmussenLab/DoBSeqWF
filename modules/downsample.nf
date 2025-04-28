@@ -7,6 +7,7 @@ process DOWNSAMPLE {
     // Approximately 40% is on target - so cap set at 400M reads. 200M per file.
     
     conda "$projectDir/envs/bbmap/environment.yaml"
+    container params.container.bbmap
 
     input:
     tuple val(sample_id), path(reads, stageAs: 'raw/*')

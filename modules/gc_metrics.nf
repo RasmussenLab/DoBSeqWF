@@ -3,6 +3,7 @@ process GC_METRICS {
     // Collect gc bias metrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.txt", mode:'copy'
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.summary.txt", mode:'copy'
