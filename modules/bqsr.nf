@@ -1,4 +1,5 @@
 process BQSR {
+    label 'process_low'
     tag "Calculate score recalibration - $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"

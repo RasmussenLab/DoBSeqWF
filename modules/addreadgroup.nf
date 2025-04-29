@@ -1,4 +1,5 @@
 process ADDREADGROUP {
+    label 'process_single'
     tag "Add read group - $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"

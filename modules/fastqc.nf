@@ -1,4 +1,5 @@
 process FASTQC {
+    label 'process_low'
     tag "FastQC - ${sample_id}"
 
     conda "$projectDir/envs/fastqc/environment.yaml"

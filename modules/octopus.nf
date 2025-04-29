@@ -1,4 +1,5 @@
 process OCTOPUS {
+    label 'process_low'
     tag "Octopus - $sample_id"
     // Call variants using Octopus
     // https://luntergroup.github.io/octopus/

@@ -1,5 +1,5 @@
 process TEST {
-
+    label 'process_single'
     conda "$projectDir/envs/pinpy/environment.yaml"
     container params.container.pinpy
 

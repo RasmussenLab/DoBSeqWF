@@ -1,4 +1,5 @@
 process SNPEFF {
+    label 'process_low'
     tag "$sample_id"
 
     // Add functional annotations to a VCF file using SnpEff.

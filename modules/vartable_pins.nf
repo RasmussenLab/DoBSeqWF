@@ -1,5 +1,5 @@
 process VARTABLE_PINS {
-
+    label 'process_single'
     conda "$projectDir/envs/gatk4/environment.yaml"
     container params.container.gatk
 

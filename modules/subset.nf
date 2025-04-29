@@ -1,4 +1,5 @@
 process SUBSET {
+    label 'process_low'
     tag "Subset alignment and convert to bam - $sample_id"
 
     conda "$projectDir/envs/samtools/environment.yaml"

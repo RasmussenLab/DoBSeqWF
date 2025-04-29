@@ -1,5 +1,5 @@
 process PINPY {
-
+    label 'process_low'
     conda "$projectDir/envs/pinpy/environment.yaml"
     container params.container.pinpy
 

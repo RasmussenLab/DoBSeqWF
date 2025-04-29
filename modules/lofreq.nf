@@ -1,4 +1,5 @@
 process LOFREQ {
+    label 'process_low'
     tag "Lofreq call - $sample_id"
     // Call variants using Lofreq - call parallel
     

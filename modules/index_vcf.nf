@@ -1,4 +1,5 @@
 process INDEX_VCF {
+    label 'process_single'
     tag "Index VCF $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"

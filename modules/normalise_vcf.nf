@@ -1,4 +1,5 @@
 process NORMALISE_VCF {
+    label 'process_low'
     tag "$sample_id"
     // 1. Splits multi-allelic variants into multiple lines
     // 2. Left-aligns indels (standard for GATK).

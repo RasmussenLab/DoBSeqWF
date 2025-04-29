@@ -1,4 +1,5 @@
 process BED_ANNOTATE {
+    label 'process_single'
     tag "$sample_id"
     // Annotate VCF by third column in BED file
 

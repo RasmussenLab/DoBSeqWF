@@ -1,4 +1,5 @@
 process MERGEBAM {
+    label 'process_medium'
     tag "Merge bam files - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"

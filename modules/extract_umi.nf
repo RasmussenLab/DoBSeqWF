@@ -1,4 +1,5 @@
 process EXTRACT_UMI {
+    label 'process_low'
     tag "Extract UMI from uBAM - $sample_id"
     // Convert FastQ files to unaligned BAM files.
     

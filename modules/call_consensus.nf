@@ -1,4 +1,5 @@
 process CALL_CONSENSUS {
+    label 'process_low'
     tag "Call consensus reads - $sample_id"
 
     conda "$projectDir/envs/fgbio/environment.yaml"

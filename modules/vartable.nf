@@ -1,4 +1,5 @@
 process VARTABLE {
+    label 'process_single'
     tag "VCF to TSV $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
