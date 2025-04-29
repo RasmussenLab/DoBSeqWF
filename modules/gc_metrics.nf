@@ -1,4 +1,5 @@
 process GC_METRICS {
+    label 'process_low'
     tag "$sample_id"
     // Collect gc bias metrics for bam file
 

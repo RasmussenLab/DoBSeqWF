@@ -1,4 +1,5 @@
 process INSERT_SIZE_METRICS {
+    label 'process_low'
     tag "$sample_id"
     // Collect insert size metrics for bam file
 

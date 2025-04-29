@@ -1,4 +1,5 @@
 process MERGE_CONSENSUS {
+    label 'process_medium'
     tag "Merge consensus bam files - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"

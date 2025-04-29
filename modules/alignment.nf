@@ -1,4 +1,5 @@
 process ALIGNMENT {
+    label 'process_multi'
     tag "Alignment - $sample_id"
     // Align reads to the reference genome using BWA, convert to BAM and sort.
 

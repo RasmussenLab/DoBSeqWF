@@ -1,4 +1,5 @@
 process FLAGSTAT {
+    label 'process_low'
     tag "Flagstat - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"

@@ -1,4 +1,5 @@
 process COMBINEGVCFS {
+    label 'process_low'
     tag "COMBINE_GVCF"
     // Merge gVCF files into a single GenomicsDB
     

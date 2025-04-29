@@ -1,4 +1,5 @@
 process SNPSIFT_CLINVAR {
+    label 'process_low'
     tag "$sample_id"
 
     // Add ClinVar annotations to a VCF file using SnpSift.

@@ -1,4 +1,5 @@
 process MULTIQC {
+    label 'process_single'
     tag "MultiQC everything"
 
     conda "$projectDir/envs/multiqc/environment.yaml"

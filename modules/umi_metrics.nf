@@ -1,4 +1,5 @@
 process UMI_METRICS {
+    label 'process_low'
     tag "UMI metrics - $sample_id"
 
     // Creates a series of metrics files:

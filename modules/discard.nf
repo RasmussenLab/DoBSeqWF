@@ -1,5 +1,5 @@
 process DISCARD {
-    
+    label 'process_single'
     publishDir "${params.outputDir}/undiscarded_variants/", pattern: "*.vcf", mode:'copy'
 
     input:

@@ -1,4 +1,5 @@
 process CRAM {
+    label 'process_low'
     tag "BAM->CRAM - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"

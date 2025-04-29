@@ -1,4 +1,5 @@
 process ALIGNMENT_METRICS {
+    label 'process_low'
     tag "$sample_id"
     // Collect alignment metrics for bam file
 

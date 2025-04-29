@@ -1,5 +1,7 @@
 process DOWNSAMPLE {
     tag "$sample_id"
+    label 'process_single'
+
     // Downsample FastQ file to number of million reads.
     // Twist kit target region: 
     // 150x = 2.5M reads

@@ -1,4 +1,5 @@
 process MERGEVCFS {
+    label 'process_low'
     tag "MergeVCFs - $sample_id"
     // Call variants using GATK - HaplotypeCaller
     

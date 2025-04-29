@@ -1,4 +1,5 @@
 process FASTQ {
+    label 'process_low'
     tag "uBAM to FastQ - $sample_id"
     // Convert unaligned uBAM files to FastQ.
     

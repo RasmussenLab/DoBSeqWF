@@ -1,4 +1,5 @@
 process DUPLICATE_METRICS {
+    label 'process_medium'
     tag "$sample_id"
     // Mark duplicate reads in BAM files
 

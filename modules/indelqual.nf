@@ -1,4 +1,5 @@
 process INDELQUAL {
+    label 'process_low'
     tag "Lofreq indelqual - $sample_id"
     // Tag indel quality using Lofreq - indelqual
     

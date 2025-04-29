@@ -1,5 +1,5 @@
 process CRAMTABLE {
-
+    label 'process_single'
     publishDir "${projectDir}/", pattern: "cramtable.tsv", mode:'copy'
 
     input:

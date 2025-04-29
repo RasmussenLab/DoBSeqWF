@@ -1,4 +1,5 @@
 process INDEX {
+    label 'process_low'
     tag "Index bam file - $sample_id"
 
     conda "$projectDir/envs/samtools/environment.yaml"

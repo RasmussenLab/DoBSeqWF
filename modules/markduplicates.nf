@@ -1,4 +1,5 @@
 process MARKDUPLICATES {
+    label 'process_medium'
     tag "Mark duplicates - $sample_id"
     // Mark duplicate reads in BAM files
     

@@ -1,4 +1,5 @@
 process INTERVALS {
+    label 'process_single'
     tag "BedFileToIntervalList"
 
     conda "$projectDir/envs/gatk4/environment.yaml"

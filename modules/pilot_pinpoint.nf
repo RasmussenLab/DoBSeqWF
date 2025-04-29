@@ -1,5 +1,5 @@
 process PILOT_PINPOINT {
-
+    label 'process_low'
     conda "$projectDir/envs/r_env/environment.yaml"
     container params.container.r_env
 

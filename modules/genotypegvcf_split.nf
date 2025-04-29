@@ -1,4 +1,5 @@
 process GENOTYPEGVCF_SPLIT {
+    label 'process_low'
     tag "GenotypeGVCFs"
     // Call variants on multisample gVCF db
     

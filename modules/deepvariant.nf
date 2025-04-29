@@ -1,4 +1,5 @@
 process DEEPVARIANT {
+    label 'process_low'
     tag "DeepVariant - $sample_id"
     // Call variants using DeepVariant
 

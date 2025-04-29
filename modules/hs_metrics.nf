@@ -1,4 +1,5 @@
 process HS_METRICS {
+    label 'process_low'
     tag "$sample_id"
     // Collect HSMetrics for bam file
 

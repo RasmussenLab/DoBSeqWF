@@ -1,4 +1,5 @@
 process VALIDATE {
+    label 'process_low'
     tag "Validate bam file - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"

@@ -1,4 +1,5 @@
 process GENOMICSDB {
+    label 'process_medium'
     tag "MERGE_GVCF"
     // Merge gVCF files into a single GenomicsDB
     

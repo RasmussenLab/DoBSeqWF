@@ -1,4 +1,5 @@
 process CLEAN {
+    label 'process_low'
     tag "Clean bam file - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"

@@ -1,4 +1,5 @@
 process HAPLOTYPECALLER_SPLIT {
+    label 'process_low'
     tag "HaplotypeCaller - $sample_id"
     // Call variants using GATK - HaplotypeCaller
     

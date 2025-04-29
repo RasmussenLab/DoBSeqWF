@@ -1,4 +1,5 @@
 process MOSDEPTH {
+    label 'process_low'
     tag "mosdepth - ${sample_id}"
 
     // Added additional high coverage thresholds:

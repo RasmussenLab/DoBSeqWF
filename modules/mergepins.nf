@@ -1,4 +1,5 @@
 process MERGE_PINS {
+    label 'process_single'
     tag "Merging all pinpointables"
     // Merge pinpointables into a single VCF
 

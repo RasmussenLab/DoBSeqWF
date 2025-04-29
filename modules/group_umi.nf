@@ -1,4 +1,5 @@
 process GROUP_UMI {
+    label 'process_medium'
     tag "Group reads by UMI - $sample_id"
 
     conda "$projectDir/envs/fgbio/environment.yaml"

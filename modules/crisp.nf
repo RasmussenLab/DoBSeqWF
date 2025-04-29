@@ -1,4 +1,5 @@
 process CRISP {
+    label 'process_medium'
     tag "CRISP - everything"
     // Call variants on all pools using CRISP
     // https://github.com/vibansal/crisp

@@ -1,4 +1,5 @@
 process DROP_PL {
+    label 'process_single'
     tag "$sample_id"
     // Drop PL tag from VCF file.
 

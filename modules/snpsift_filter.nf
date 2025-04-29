@@ -1,4 +1,5 @@
 process SNPSIFT_FILTER {
+    label 'process_low'
     tag "$sample_id"
 
     // Filter variants based on ClinVar and SNPEff annotations using SnpSift.
