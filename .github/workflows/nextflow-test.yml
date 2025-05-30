@@ -21,13 +21,13 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '17'
     
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
-        python-version: 3.8
+        python-version: 3.9
         channels: conda-forge,bioconda,defaults
         channel-priority: strict
     
