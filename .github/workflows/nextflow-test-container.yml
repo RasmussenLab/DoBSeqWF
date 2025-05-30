@@ -2,11 +2,9 @@ name: Nextflow Test Pipeline Container
 
 on:
   push:
-    branches:
-      - test_actions
+    branches: [ main, dev ]
   pull_request:
-    branches:
-      - test_actions
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
