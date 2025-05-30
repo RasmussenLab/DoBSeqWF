@@ -1,4 +1,4 @@
-name: Nextflow Test Pipeline Conda
+name: Nextflow Test Pipeline Container
 
 on:
   push:
@@ -28,21 +28,19 @@ jobs:
       with:
         apptainer-version: 1.2.5
     
-    - name: Cache Apptainer images
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.apptainer/cache
-          ${{ github.workspace }}/.apptainer
-        key: apptainer-cache-${{ runner.os }}-${{ hashFiles('**/nextflow.config', '**/modules.config') }}
-        restore-keys: |
-          apptainer-cache-${{ runner.os }}-
-    
     - name: Set up Apptainer cache directory
       run: |
         mkdir -p ${{ github.workspace }}/.apptainer
-        export APPTAINER_CACHEDIR=${{ github.workspace }}/.apptainer
+        echo "NXF_APPTAINER_CACHEDIR=${{ github.workspace }}/.apptainer" >> $GITHUB_ENV
         echo "APPTAINER_CACHEDIR=${{ github.workspace }}/.apptainer" >> $GITHUB_ENV
+    
+    - name: Cache Apptainer images
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/.apptainer
+        key: apptainer-cache-${{ runner.os }}-${{ hashFiles('**/nextflow.config', '**/modules.config') }}
+        restore-keys: |
+          apptainer-cache-${{ runner.os }}-
       
     - name: Install Nextflow
       run: |
@@ -52,6 +50,9 @@ jobs:
 
     - name: Run Nextflow pipeline with Apptainer
       run: |
+        export APPTAINER_NO_SETGROUPS=1
+        export APPTAINER_BIND="/tmp:/tmp"
+        
         nextflow run main.nf -profile test -with-apptainer
     
     - name: Check test completion and details
