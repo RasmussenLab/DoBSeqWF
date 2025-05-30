@@ -2,11 +2,9 @@ name: Nextflow Test Pipeline Conda
 
 on:
   push:
-    branches:
-      - test_actions
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - test_actions
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
