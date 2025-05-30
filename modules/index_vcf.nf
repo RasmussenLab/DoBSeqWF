@@ -1,5 +1,9 @@
 process INDEX_VCF {
+    label 'process_single'
     tag "Index VCF $sample_id"
+
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/index_vcf/", pattern: "${sample_id}.${caller}.log", mode:'copy'
 

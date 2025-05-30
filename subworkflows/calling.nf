@@ -9,6 +9,7 @@ include { HAPLOTYPECALLER           } from '../modules/haplotypecaller'
 include { HAPLOTYPECALLER_SPLIT     } from '../modules/haplotypecaller_split'
 include { LOFREQ                    } from '../modules/lofreq'
 include { DEEPVARIANT               } from '../modules/deepvariant'
+include { FREEBAYES                 } from '../modules/freebayes'
 include { CRISP                     } from '../modules/crisp'
 include { OCTOPUS                   } from '../modules/octopus'
 include { FILTER                    } from '../modules/filter'
@@ -50,6 +51,10 @@ workflow CALLING {
 
     if (params.octopus) {
         OCTOPUS(bam_file_w_index, reference_genome, bedfile)
+    }
+
+    if (params.freebayes) {
+        FREEBAYES(bam_file_w_index, reference_genome, bedfile)
     }
 
     if (params.runHCParallel) {

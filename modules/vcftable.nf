@@ -1,5 +1,5 @@
 process VCFTABLE {
-
+    label 'process_single'
     publishDir "${projectDir}/", pattern: "vcftable.tsv", mode:'copy'
 
     input:

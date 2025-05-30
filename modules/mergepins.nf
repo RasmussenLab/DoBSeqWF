@@ -1,6 +1,10 @@
 process MERGE_PINS {
+    label 'process_single'
     tag "Merging all pinpointables"
     // Merge pinpointables into a single VCF
+
+    conda "$projectDir/envs/bcftools/environment.yaml"
+    container params.container.bcftools
 
     publishDir "${params.outputDir}/", mode:'copy'
 

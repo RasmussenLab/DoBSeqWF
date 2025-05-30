@@ -1,4 +1,5 @@
 process EXTRACT_UMI {
+    label 'process_low'
     tag "Extract UMI from uBAM - $sample_id"
     // Convert FastQ files to unaligned BAM files.
     
@@ -8,9 +9,8 @@ process EXTRACT_UMI {
     //  RX for a string containing both the 5' and 3' UMIs separated by a dash.
     // Twist UMI adapters are 5 base pairs with a 2 base pair skip, resulting in the read structure 5M2S+T
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/fgbio/environment.yaml"
+    container params.container.fgbio
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*")

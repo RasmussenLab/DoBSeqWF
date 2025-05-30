@@ -1,10 +1,10 @@
 process MARKDUPLICATES {
+    label 'process_medium'
     tag "Mark duplicates - $sample_id"
     // Mark duplicate reads in BAM files
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/markduplicates/", pattern: "${sample_id}*.log", mode:'copy'
 

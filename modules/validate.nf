@@ -1,9 +1,9 @@
 process VALIDATE {
+    label 'process_low'
     tag "Validate bam file - $sample_id"
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/validation/", pattern: "${sample_id}.validation.log", mode:'copy'
 

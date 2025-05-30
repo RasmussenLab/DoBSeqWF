@@ -1,9 +1,9 @@
 process ALIGNMENT_UMI {
+    label 'process_multi'
     tag "Alignment - $sample_id"
     // Align reads to the reference genome using BWA, convert to BAM and sort by QUERY NAME.
-    // cpus = { 15 * task.attempt }
-    // memory = { 56.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+
+    conda "$projectDir/envs/bwa_umi/environment.yaml"
 
     publishDir "${params.outputDir}/log/mapping/", pattern: "${sample_id}.log", mode:'copy'
 

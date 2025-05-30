@@ -1,7 +1,11 @@
 process SNPSIFT_CLINVAR {
+    label 'process_low'
     tag "$sample_id"
 
     // Add ClinVar annotations to a VCF file using SnpSift.
+
+    conda "$projectDir/envs/snpeff/environment.yaml"
+    container params.container.snpeff
 
     publishDir "${params.outputDir}/log/snpsift_clinvar/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/annotated_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'

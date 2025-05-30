@@ -1,0 +1,8 @@
+name: bwa_umi
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bwa-mem2=2.2.1
+  - gatk4=4.3.0.0

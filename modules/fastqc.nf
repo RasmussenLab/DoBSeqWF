@@ -1,9 +1,9 @@
 process FASTQC {
+    label 'process_low'
     tag "FastQC - ${sample_id}"
 
-    // cpus = { 16 * task.attempt }
-    // memory = { 10.GB * task.attempt }
-    // time = { 4.hour * task.attempt }
+    conda "$projectDir/envs/fastqc/environment.yaml"
+    container params.container.fastqc
 
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_fastqc.html", mode:'copy'
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_fastqc.zip", mode:'copy'

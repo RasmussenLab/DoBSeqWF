@@ -1,10 +1,10 @@
 process ALIGNMENT_METRICS {
+    label 'process_low'
     tag "$sample_id"
     // Collect alignment metrics for bam file
 
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/gatk4/environment.yaml"
+    container params.container.gatk
 
     publishDir "${params.outputDir}/log/alignment_metrics/", pattern: "${sample_id}*.align.txt", mode:'copy'
 

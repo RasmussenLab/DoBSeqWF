@@ -1,7 +1,11 @@
 process SNPSIFT_FILTER {
+    label 'process_low'
     tag "$sample_id"
 
     // Filter variants based on ClinVar and SNPEff annotations using SnpSift.
+
+    conda "$projectDir/envs/snpeff/environment.yaml"
+    container params.container.snpeff
 
     publishDir "${params.outputDir}/annotated_variants/lof/", pattern: "${sample_id}.${caller}.lof.vcf", mode:'copy'
     publishDir "${params.outputDir}/annotated_variants/pathogenic/", pattern: "${sample_id}.${caller}.p.vcf", mode:'copy'

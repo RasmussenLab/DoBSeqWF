@@ -1,9 +1,9 @@
 process CRAM {
+    label 'process_low'
     tag "BAM->CRAM - $sample_id"
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/samtools/environment.yaml"
+    container params.container.samtools
 
     publishDir "${params.outputDir}/cram/", pattern: "${sample_id}.cram", mode:'copy'
 

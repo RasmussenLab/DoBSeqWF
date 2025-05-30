@@ -1,4 +1,4 @@
-name: filter
+name: dswf_filter
 channels:
   - conda-forge
   - bioconda

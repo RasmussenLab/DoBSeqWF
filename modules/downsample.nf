@@ -1,14 +1,15 @@
 process DOWNSAMPLE {
     tag "$sample_id"
+    label 'process_single'
+
     // Downsample FastQ file to number of million reads.
     // Twist kit target region: 
     // 150x = 2.5M reads
     // 9600x = 167M reads
     // Approximately 40% is on target - so cap set at 400M reads. 200M per file.
     
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+    conda "$projectDir/envs/bbmap/environment.yaml"
+    container params.container.bbmap
 
     input:
     tuple val(sample_id), path(reads, stageAs: 'raw/*')

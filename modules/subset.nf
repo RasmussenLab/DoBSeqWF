@@ -1,9 +1,9 @@
 process SUBSET {
+    label 'process_low'
     tag "Subset alignment and convert to bam - $sample_id"
-    
-    // cpus = 8
-    // memory = { 32.GB * task.attempt }
-    // time = { 6.hour * task.attempt }
+
+    conda "$projectDir/envs/samtools/environment.yaml"
+    container params.container.samtools
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: 'raw/*')

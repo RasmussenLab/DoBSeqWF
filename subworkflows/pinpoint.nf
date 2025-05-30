@@ -59,17 +59,18 @@ workflow PINPOINT {
             final_vcfs = DISCARD.out.vcf_file
         } else {
             final_vcfs = FILTER_VARIANTS.out.filtered_vcfs
-        }  
-    } else {
-        final_vcfs = vcf_ch
-    }
-    
-    final_vcfs
-        .map { file -> 
-        def baseName = file.baseName.replaceAll(/\.GATK$/, '')
-        return tuple(baseName, file)
         }
-        .set { vartable_vcfs }
+        
+        final_vcfs
+            .map { file -> 
+                def baseName = file.baseName.replaceAll(/\.GATK$/, '')
+                return tuple(baseName, file)
+            }
+            .set { vartable_vcfs }
+    } else {
+        final_vcfs = norm_vcfs
+        vartable_vcfs = vcf_ch
+    }
     
     VARTABLE(vartable_vcfs, 'GATK')
     VARTABLE.out.vartable

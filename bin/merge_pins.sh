@@ -64,4 +64,4 @@ done
 
 for f in output/*.vcf; do bgzip $f; tabix $f.gz; done
 bcftools concat -a output/*.vcf.gz -o unsorted.vcf
-bcftools sort unsorted.vcf -o pinpointables.vcf
+bcftools sort --temp-dir . unsorted.vcf -o pinpointables.vcf

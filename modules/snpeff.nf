@@ -1,10 +1,14 @@
 process SNPEFF {
+    label 'process_low'
     tag "$sample_id"
 
     // Add functional annotations to a VCF file using SnpEff.
     // -strict and -canon options ensure that only high-confidence annotations are added.
     // -lof option to add loss-of-function annotations.
     // -noMotif avoids adding motif annotations.
+
+    conda "$projectDir/envs/snpeff/environment.yaml"
+    container params.container.snpeff
 
     publishDir "${params.outputDir}/log/snpeff/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/log/snpeff/stats/", pattern: "${sample_id}.${caller}_snpeff_stats.csv", mode:'copy'

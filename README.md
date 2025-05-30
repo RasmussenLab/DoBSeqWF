@@ -1,8 +1,8 @@
 # DoBSeq Workflow
 
-## General usage:
+### General usage:
 
-### 1. Install nextflow [manually](https://www.nextflow.io/docs/latest/getstarted.html) or using conda:
+### 1. Install nextflow [manually](https://www.nextflow.io/docs/latest/getstarted.html) or using [conda](https://www.anaconda.com/docs/getting-started/miniconda/install):
 
 ```Bash
 conda install nextflow
@@ -14,24 +14,34 @@ conda install nextflow
 git clone https://github.com/RasmussenLab/DoBSeqWF.git .
 ```
 
-### 3. Run pipeline without any data (dry-run):
+### 3. Run pipeline without any data (dry-run) using [docker](https://docs.docker.com/desktop), [apptainer](https://apptainer.org/docs/admin/main/installation.html#installation-on-linux) or conda environments:
 
 ```Bash
-nextflow run main.nf -profile (standard/esrum/ngc),test -stub
+# Docker
+nextflow run main.nf -profile test -stub -with-docker
+# Apptainer
+nextflow run main.nf -profile test -stub -with-apptainer
+# Conda
+nextflow run main.nf -profile test -stub -with-conda
 ```
 
-### 4. Run pipeline with tiny test data:
+### 4. Run pipeline with minimal test data:
 
 ```Bash
-nextflow run main.nf -profile (standard/esrum),test
+# Docker
+nextflow run main.nf -profile test -with-docker
+# Apptainer
+nextflow run main.nf -profile test -with-apptainer
+# Conda
+nextflow run main.nf -profile test -with-conda
 ```
 
 ### 5. Run pipeline with input data:
 The pipeline has multiple optional configurations found in ```nextflow.config```.
-Configurations can be supplied as a ```config.json``` and run with ```nextflow run main.nf -profile (standard/esrum) -params-file config.json```, or directly from the commandline:
+Configurations can be supplied a configuration file, see ```config.json```, and run with ```nextflow run main.nf -params-file config.json```, or parameters can be added directly from the commandline:
 ```Bash
 nextflow run main.nf                                       \
-  -profile (standard/esrum/ngc)                            \
+  (-with-docker/-with-apptainer/-with-conda)               \
   --pooltable <path to pool fastq file table>              \
   --decodetable <path to pool decode tsv>                  \
   --reference_genome <path to indexed reference genome>    \
@@ -77,7 +87,7 @@ DoBSeqWF
 │   │   ├── reference_genomes
 │   │   │   └── small
 │   │   │       └── small_reference.*
-│   │   └── test_data
+│   │   └── test_data                     # Test data
 │   │       ├── coordtable.tsv
 │   │       ├── decodetable.tsv
 │   │       ├── pools
@@ -90,7 +100,9 @@ DoBSeqWF
 ├── bin                                   # Executable pipeline scripts
 │   └── <script>.*
 ├── conf
-│   └── profiles.config                   # Configuration profiles for compute environments
+│   ├── container.config                  # Container registry addresses for computational tools.
+│   ├── ngc.config                        # Configuration profiles the NGC-HPC compute enviornment.
+│   └── profiles.config                   # Configuration profile for default environment.
 ├── envs
 │   └── <name>/
 │       └── environment.yaml              # Conda environment definitions

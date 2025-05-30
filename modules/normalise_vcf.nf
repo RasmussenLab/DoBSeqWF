@@ -1,8 +1,12 @@
 process NORMALISE_VCF {
+    label 'process_low'
     tag "$sample_id"
     // 1. Splits multi-allelic variants into multiple lines
     // 2. Left-aligns indels (standard for GATK).
     // 3. Checks refs against reference genome
+
+    conda "$projectDir/envs/bcftools/environment.yaml"
+    container params.container.bcftools
 
     publishDir "${params.outputDir}/log/normalise_vcf/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/normalised_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
