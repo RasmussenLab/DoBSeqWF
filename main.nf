@@ -47,7 +47,7 @@ include { TEST                      } from './modules/test'
 pooltable_ch = Channel
     .fromPath(params.pooltable)
     .splitCsv(sep: '\t')
-    .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
+    .map { row -> tuple(row[0], [file(row[2]), file(row[3])]) }
 
 if (params.step == 'calling') {
     cramtable_ch = Channel
@@ -118,7 +118,7 @@ workflow {
             PILOT_PINPOINT(vcf_ch.collect(), file(params.pooltable), file(params.decodetable))
             pin_ch = PILOT_PINPOINT.out.pinned_variants
         } else if (params.pinpoint_method == 'new') {
-            PINPOINT(gatk_ch, file(params.decodetable), reference_genome_ch)
+            PINPOINT(gatk_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch)
             pin_ch = PINPOINT.out.pinned_variants
         }
     }
