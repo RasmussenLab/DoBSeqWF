@@ -14,6 +14,11 @@ include { DISCARD                   } from '../modules/discard'
 include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
 include { MERGE_PINS                } from '../modules/mergepins'
+include { MATRIX_CONTEXT            } from '../modules/matrix_context'
+include { BGZIP                     } from '../modules/bgzip'
+include { PIN_BASIC                 } from '../modules/pin_basic'
+include { UNIQUE_VCF                } from '../modules/unique_vcf'
+include { VEP                       } from '../modules/vep'
 
 
 if (params.filter) {
@@ -25,6 +30,7 @@ if (params.filter) {
 workflow PINPOINT {
     take:
     vcf_file
+    pooltable
     decode_table
     reference_genome
     
@@ -82,9 +88,34 @@ workflow PINPOINT {
         vartables,
         decode_table,
         'GATK')
-    
     VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
     MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
+
+    // New pinpoint-flow
+    // If alone, add normalisation here first..
+    BGZIP(vcf_ch)
+    BGZIP.out.bgzf_file
+       .map { sample, vcf, index -> tuple(vcf, index) }
+       .collect()
+       .set { basic_input }
+    MATRIX_CONTEXT(pooltable,[])
+    PIN_BASIC(basic_input,MATRIX_CONTEXT.out.json)
+    UNIQUE_VCF(basic_input)
+    VEP(
+        UNIQUE_VCF.out.vcf_file,
+        reference_genome,
+        [], // cache
+        [], // utr
+        [], // alphamissense
+        [], // clinvar
+        [], // danmac
+        [], // blacklist
+        [], // repeatmasker
+        [], // gnomad
+        [], // loftee gerp
+        [], // loftee human ancestor
+        [] // loftee conservation
+        )
 
     emit:
     pinned_variants = PINPY.out.lookup_table
