@@ -1,0 +1,1 @@
+docker buildx build --platform linux/amd64,linux/arm64 -t madscort/vep_w_loftee:111.0 --push .
