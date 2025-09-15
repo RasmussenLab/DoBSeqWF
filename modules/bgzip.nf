@@ -5,7 +5,7 @@ process BGZIP {
     conda "$projectDir/envs/samtools/environment.yaml"
     container params.container.samtools
 
-    publishDir "${params.outputDir}/norm_bgzip_idx/", pattern: "${sample_id}.vcf.*", mode:'copy'
+    publishDir "${params.outputDir}/norm_bgzip_idx/", pattern: "*vcf.*", mode:'copy'
 
     input:
     tuple val(sample_id), path(vcf_file)
