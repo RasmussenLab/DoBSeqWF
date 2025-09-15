@@ -7,7 +7,6 @@
 include { INDEX_VCF                 } from '../modules/index_vcf'
 include { DROP_PL                   } from '../modules/drop_pl'
 include { NORMALISE_VCF             } from '../modules/normalise_vcf'
-include { MATRIX_CONTEXT            } from '../modules/matrix_context'
 include { BGZIP                     } from '../modules/bgzip'
 include { MPILEUP                   } from '../modules/mpileup'
 include { RESCUE                    } from '../modules/rescue'
@@ -17,7 +16,6 @@ workflow VARIANT_RESCUE {
     vcf_file
     bam_file_w_index
     pooltable
-    decode_table
     reference_genome
     bedfile
     
@@ -31,7 +29,6 @@ workflow VARIANT_RESCUE {
        .map { sample, vcf, index -> tuple(vcf, index) }
        .collect()
        .set { vcf_files }
-    MATRIX_CONTEXT(pooltable,[])
     MPILEUP(bam_file_w_index, reference_genome, bedfile)
     RESCUE(pooltable, vcf_files, MPILEUP.out.mpileup_file.collect())
 

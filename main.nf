@@ -30,6 +30,9 @@ include { ANNOTATION                } from './subworkflows/annotation'
 include { BAM                       } from './modules/bam'
 include { INDEX                     } from './modules/index'
 
+// Method for creating decode table and matrix context
+include { MATRIX_CONTEXT            } from './modules/matrix_context'
+
 // Pinpoint methods
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
 include { PINPOINT                  } from './subworkflows/pinpoint'
@@ -111,18 +114,28 @@ workflow {
     }
 
     if (params.step == 'pinpoint' || params.step == 'all' || params.step == '') {
+        pooltable = file(params.pooltable)
         if (params.pinpoint_method == 'pilot') {
             vcf_ch = gatk_ch
                 .mix(lofreq_ch)
                 .map { pool_id, vcf_file -> vcf_file }
             
-            PILOT_PINPOINT(vcf_ch.collect(), file(params.pooltable), file(params.decodetable))
+            PILOT_PINPOINT(vcf_ch.collect(), pooltable, file(params.decodetable))
             pin_ch = PILOT_PINPOINT.out.pinned_variants
         } else if (params.pinpoint_method == 'new') {
-            PINPOINT(gatk_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch)
+            if (params.decodetable == "") {
+                MATRIX_CONTEXT(pooltable,[])
+                matrix_context = MATRIX_CONTEXT.out.json
+                decode_table = MATRIX_CONTEXT.out.decodetable
+            } else {
+                MATRIX_CONTEXT(pooltable,file(params.decodetable))
+                matrix_context = MATRIX_CONTEXT.out.json
+                decode_table = file(params.decodetable)
+            }
+            PINPOINT(gatk_ch, pooltable, decode_table, matrix_context, reference_genome_ch)
             pin_ch = PINPOINT.out.pinned_variants
             if (params.variant_rescue) {
-                VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch, bedfile_ch)
+                VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, pooltable, reference_genome_ch, bedfile_ch)
             }
         }
     }

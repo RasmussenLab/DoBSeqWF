@@ -14,7 +14,6 @@ include { DISCARD                   } from '../modules/discard'
 include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
 include { MERGE_PINS                } from '../modules/mergepins'
-include { MATRIX_CONTEXT            } from '../modules/matrix_context'
 include { BGZIP                     } from '../modules/bgzip'
 include { PIN_BASIC                 } from '../modules/pin_basic'
 include { UNIQUE_VCF                } from '../modules/unique_vcf'
@@ -32,6 +31,7 @@ workflow PINPOINT {
     vcf_file
     pooltable
     decode_table
+    matrix_context
     reference_genome
     
     main:
@@ -98,8 +98,7 @@ workflow PINPOINT {
        .map { sample, vcf, index -> tuple(vcf, index) }
        .collect()
        .set { basic_input }
-    MATRIX_CONTEXT(pooltable,[])
-    PIN_BASIC(basic_input,MATRIX_CONTEXT.out.json)
+    PIN_BASIC(basic_input,matrix_context)
     UNIQUE_VCF(basic_input)
     VEP(
         UNIQUE_VCF.out.vcf_file,
