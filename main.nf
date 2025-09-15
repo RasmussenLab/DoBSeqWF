@@ -33,6 +33,7 @@ include { INDEX                     } from './modules/index'
 // Pinpoint methods
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
 include { PINPOINT                  } from './subworkflows/pinpoint'
+include { PILEUP_CALLING            } from './subworkflows/pileup_calling'
 
 // Test
 include { TEST                      } from './modules/test'
@@ -85,7 +86,7 @@ workflow {
         } else {
             bam_file_w_index_ch = MAPPING(pooltable_ch, reference_genome_ch, bedfile_ch)
         }
-    } else if (params.step == 'calling') {
+    } else if (params.step == 'calling' || (params.step == 'pinpoint' && params.pileup_calling)) {
         BAM(cramtable_ch, reference_genome_ch)
         bam_file_w_index_ch = INDEX(BAM.out.bam_file)
     }
@@ -120,6 +121,9 @@ workflow {
         } else if (params.pinpoint_method == 'new') {
             PINPOINT(gatk_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch)
             pin_ch = PINPOINT.out.pinned_variants
+            if (params.pileup_calling) {
+                PILEUP_CALLING(gatk_ch, bam_file_w_index_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch, bedfile_ch)
+            }
         }
     }
 
