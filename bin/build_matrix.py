@@ -180,12 +180,21 @@ def write_tsv(ctx: dict, path: Path):
                 cell["cell_label"], cell["alias"], cell.get("sample_id")
             ])
 
+def write_decode(ctx: dict, path: Path):
+    with path.open("w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t")
+        for cell in ctx["matrix"]["cells"]:
+            w.writerow([
+                cell["alias"], cell["row_pool_id"], cell["col_pool_id"]
+            ])
+
 def main(argv=None):
     p = argparse.ArgumentParser(description="Build matrix context from pools and optional decode.")
     p.add_argument("--pools", required=True, type=Path, help="Pools TSV (pool_id, dimension)")
     p.add_argument("--decode", required=False, type=Path, help="Decode TSV (sample_id, row_pool_id, col_pool_id)")
     p.add_argument("--out-json", required=True, type=Path, help="Output JSON path")
     p.add_argument("--out-tsv", required=True, type=Path, help="Output TSV path")
+    p.add_argument("--out-decode", required=True, type=Path, help="Output decode TSV path")
     p.add_argument("--pad-width", default="auto", help='Column label zero-padding width (int or "auto")')
     args = p.parse_args(argv)
 
@@ -203,8 +212,10 @@ def main(argv=None):
     ctx = build_context(rows, cols, decode, pad_width)
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_tsv.parent.mkdir(parents=True, exist_ok=True)
+    args.out_decode.parent.mkdir(parents=True, exist_ok=True)
     write_json(ctx, args.out_json)
     write_tsv(ctx, args.out_tsv)
+    write_decode(ctx, args.out_decode)
 
 if __name__ == "__main__":
     main()
