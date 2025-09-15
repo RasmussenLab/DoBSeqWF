@@ -4,14 +4,16 @@ process MATRIX_CONTEXT {
     container params.container.pinpy
 
     publishDir "${params.outputDir}/context/", mode:'copy', pattern: "matrix_context.*"
+    publishDir "${params.outputDir}/context/", mode:'copy', pattern: "decodetable.tsv"
 
     input:
     path pooltable
-    path decodetable
+    path decodetable, stageAs: 'input_table/*'
 
     output:
     path "matrix_context.tsv"
     path "matrix_context.json", emit: json
+    path "decodetable.tsv", emit: decodetable
 
     script:
     def decode = decodetable ? "--decode ${decodetable}" : ""
@@ -20,6 +22,7 @@ process MATRIX_CONTEXT {
         --pools ${pooltable} \
         --out-json matrix_context.json \
         --out-tsv matrix_context.tsv \
+        --out-decode decodetable.tsv \
         ${decode}
     """
 
@@ -27,5 +30,6 @@ process MATRIX_CONTEXT {
     """
     touch matrix_context.json
     touch matrix_context.tsv
+    touch decodetable.tsv
     """
 }
