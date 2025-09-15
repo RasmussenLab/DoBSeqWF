@@ -13,7 +13,7 @@ process MPILEUP {
     path(bedfile)
 
     output:
-    tuple val(sample_id), path("${sample_id}.mpileup.gz"), emit: mpileup_file
+    path("${sample_id}.mpileup.gz"), emit: mpileup_file
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
