@@ -1,6 +1,6 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PILEUP_CALLING SUB-WORKFLOW
+    VARIANT_RESCUE SUB-WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -10,8 +10,9 @@ include { NORMALISE_VCF             } from '../modules/normalise_vcf'
 include { MATRIX_CONTEXT            } from '../modules/matrix_context'
 include { BGZIP                     } from '../modules/bgzip'
 include { MPILEUP                   } from '../modules/mpileup'
+include { RESCUE                    } from '../modules/rescue'
 
-workflow PILEUP_CALLING {
+workflow VARIANT_RESCUE {
     take:
     vcf_file
     bam_file_w_index
@@ -29,11 +30,10 @@ workflow PILEUP_CALLING {
     BGZIP.out.bgzf_file
        .map { sample, vcf, index -> tuple(vcf, index) }
        .collect()
-       .set { basic_input }
+       .set { vcf_files }
     MATRIX_CONTEXT(pooltable,[])
     MPILEUP(bam_file_w_index, reference_genome, bedfile)
-
-    
+    RESCUE(pooltable, vcf_files, MPILEUP.out.mpileup_file.collect())
 
     emit:
     pinned_variants = Channel.empty()

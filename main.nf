@@ -33,7 +33,7 @@ include { INDEX                     } from './modules/index'
 // Pinpoint methods
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
 include { PINPOINT                  } from './subworkflows/pinpoint'
-include { PILEUP_CALLING            } from './subworkflows/pileup_calling'
+include { VARIANT_RESCUE            } from './subworkflows/variant_rescue'
 
 // Test
 include { TEST                      } from './modules/test'
@@ -121,8 +121,8 @@ workflow {
         } else if (params.pinpoint_method == 'new') {
             PINPOINT(gatk_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch)
             pin_ch = PINPOINT.out.pinned_variants
-            if (params.pileup_calling) {
-                PILEUP_CALLING(gatk_ch, bam_file_w_index_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch, bedfile_ch)
+            if (params.variant_rescue) {
+                VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, file(params.pooltable), file(params.decodetable), reference_genome_ch, bedfile_ch)
             }
         }
     }
