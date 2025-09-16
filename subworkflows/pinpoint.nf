@@ -92,7 +92,6 @@ workflow PINPOINT {
     MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
 
     // New pinpoint-flow
-    // If alone, add normalisation here first..
     BGZIP(vcf_ch)
     BGZIP.out.bgzf_file
        .map { sample, vcf, index -> tuple(vcf, index) }
@@ -103,17 +102,17 @@ workflow PINPOINT {
     VEP(
         UNIQUE_VCF.out.vcf_file,
         reference_genome,
-        [], // cache
-        [], // utr
-        [], // alphamissense
-        [], // clinvar
-        [], // danmac
-        [], // blacklist
-        [], // repeatmasker
-        [], // gnomad
-        [], // loftee gerp
-        [], // loftee human ancestor
-        [] // loftee conservation
+        params.vep_cache           ?: [],  // cache
+        params.utr_file            ?: [],  // utr
+        params.alphamissense_tsv   ?: [],  // alphamissense
+        params.clinvar_db          ?: [],  // clinvar
+        params.danmac_db           ?: [],  // danmac
+        params.blacklist_bed       ?: [],  // blacklist
+        params.repeatmasker_bed    ?: [],  // repeatmasker
+        params.gnomad_vcf          ?: [],  // gnomad
+        params.loftee_gerp_bw      ?: [],  // loftee gerp
+        params.loftee_human_ancestor ?: [],// loftee human ancestor
+        params.loftee_sqlite       ?: []   // loftee conservation (sqlite)
         )
 
     emit:

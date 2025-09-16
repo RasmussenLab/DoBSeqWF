@@ -13,9 +13,11 @@ if (params.bedfile_gene_annotation) {
     bedfile = Channel.fromPath(params.bedfile, checkIfExists: true).collect()
 }
 
-snpeff_cache_ch = Channel.fromPath(params.snpeff_cache, checkIfExists: true).collect()
-clinvardb_ch = Channel.fromPath(params.clinvar_db + "*", checkIfExists: true).collect()
-snpeff_config_ch = Channel.fromPath(params.snpeff_config, checkIfExists: true).collect()
+if (params.annotate) {
+    snpeff_cache_ch = Channel.fromPath(params.snpeff_cache, checkIfExists: true).collect()
+    clinvardb_ch = Channel.fromPath(params.clinvar_db + "*", checkIfExists: true).collect()
+    snpeff_config_ch = Channel.fromPath(params.snpeff_config, checkIfExists: true).collect()
+}
 
 workflow ANNOTATION {
     take:
