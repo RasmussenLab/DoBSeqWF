@@ -35,7 +35,7 @@ USER root
 
 # Set up Perl environment
 ENV PERL_MM_USE_DEFAULT=1
-ENV PERL5LIB=/opt/vep/perl5/lib/perl5:$PERL5LIB
+ENV PERL5LIB=/plugins/loftee:/opt/vep/perl5/lib/perl5:$PERL5LIB
 
 # Install system dependencies
 RUN apt-get update && apt-get -y install \
