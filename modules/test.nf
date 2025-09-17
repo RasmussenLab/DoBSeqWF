@@ -1,7 +1,7 @@
 process TEST {
     label 'process_single'
     conda "$projectDir/envs/pinpy/environment.yaml"
-    container params.container.pinpy
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.pinpy : params.container.docker.pinpy
 
     publishDir "${params.outputDir}/test/", pattern: "test.*", mode:'copy'
 

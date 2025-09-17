@@ -1,7 +1,7 @@
 process MATRIX_CONTEXT {
     label 'process_low'
     conda "$projectDir/envs/pinpy/environment.yaml"
-    container params.container.pinpy
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.pinpy : params.container.docker.pinpy
 
     publishDir "${params.outputDir}/context/", mode:'copy', pattern: "matrix_context.*"
     publishDir "${params.outputDir}/context/", mode:'copy', pattern: "decodetable.tsv"

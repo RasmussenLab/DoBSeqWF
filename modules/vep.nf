@@ -3,7 +3,7 @@ process VEP {
     // Annotate using VEP
 
     conda "$projectDir/envs/vep/environment.yaml"
-    container params.container.vep
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.vep : params.container.docker.vep
 
     publishDir "${params.outputDir}/vep_annotate/", pattern: "annotation*.tsv", mode:'copy'
 

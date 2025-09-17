@@ -4,6 +4,7 @@ process ALIGNMENT_UMI {
     // Align reads to the reference genome using BWA, convert to BAM and sort by QUERY NAME.
 
     conda "$projectDir/envs/bwa_umi/environment.yaml"
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.fgbio : params.container.docker.fgbio
 
     publishDir "${params.outputDir}/log/mapping/", pattern: "${sample_id}.log", mode:'copy'
 

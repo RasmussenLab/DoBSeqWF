@@ -4,7 +4,7 @@ process INDELQUAL {
     // Tag indel quality using Lofreq - indelqual
     
     conda "$projectDir/envs/lofreq/environment.yaml"
-    container params.container.lofreq
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.lofreq : params.container.docker.lofreq
 
     publishDir "${params.outputDir}/log/lofreq_indelqual/", pattern: "${sample_id}.lofreq.iq.log", mode:'copy'
 

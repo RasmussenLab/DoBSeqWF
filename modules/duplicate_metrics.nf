@@ -4,7 +4,7 @@ process DUPLICATE_METRICS {
     // Mark duplicate reads in BAM files
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/duplicate_metrics/", pattern: "${sample_id}*.txt", mode:'copy'
 

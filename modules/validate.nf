@@ -3,7 +3,7 @@ process VALIDATE {
     tag "Validate bam file - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/validation/", pattern: "${sample_id}.validation.log", mode:'copy'
 

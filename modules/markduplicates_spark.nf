@@ -4,7 +4,7 @@ process MARKDUPLICATES_SPARK {
     // Mark duplicate reads in BAM files
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/markduplicates/", pattern: "${sample_id}*.log", mode:'copy'
 

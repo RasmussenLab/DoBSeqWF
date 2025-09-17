@@ -3,7 +3,7 @@ process CALL_CONSENSUS {
     tag "Call consensus reads - $sample_id"
 
     conda "$projectDir/envs/fgbio/environment.yaml"
-    container params.container.fgbio
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.fgbio : params.container.docker.fgbio
 
     input:
     tuple val(sample_id), path(bam_file)

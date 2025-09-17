@@ -3,7 +3,7 @@ process MPILEUP {
     tag "BAM->mpileup - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     publishDir "${params.outputDir}/mpileup/", mode:'copy', pattern: "${sample_id}.mpileup.gz"
 

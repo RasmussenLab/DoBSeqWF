@@ -3,7 +3,7 @@ process VARTABLE {
     tag "VCF to TSV $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/variant_tables/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/variant_tables/", pattern: "${sample_id}.${caller}.tsv", mode:'copy'

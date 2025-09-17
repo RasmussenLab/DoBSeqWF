@@ -1,7 +1,7 @@
 process VARTABLE_PINS {
     label 'process_single'
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/pinpoint_variant_tables/", mode:'copy'
 

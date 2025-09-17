@@ -4,7 +4,7 @@ process GENOTYPEGVCF {
     // Call variants on multisample gVCF db
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/genotypegvcf/", pattern: "${sample_id}.genotypegvcf.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
