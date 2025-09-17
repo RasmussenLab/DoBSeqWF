@@ -4,8 +4,8 @@ process SNPSIFT_FILTER {
 
     // Filter variants based on ClinVar and SNPEff annotations using SnpSift.
 
-    conda "$projectDir/envs/snpeff/environment.yaml"
-    container params.container.snpeff
+    conda "$projectDir/envs/snpsift/environment.yaml"
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.snpsift : params.container.docker.snpsift
 
     publishDir "${params.outputDir}/annotated_variants/lof/", pattern: "${sample_id}.${caller}.lof.vcf", mode:'copy'
     publishDir "${params.outputDir}/annotated_variants/pathogenic/", pattern: "${sample_id}.${caller}.p.vcf", mode:'copy'
@@ -22,17 +22,17 @@ process SNPSIFT_FILTER {
 
     script:
     """
-    ${params.snpsift} filter \
+    SnpSift filter \
         "(exists LOF)" \
         ${vcf_file} \
         > ${sample_id}.${caller}.lof.vcf
     
-    ${params.snpsift} filter \
+    SnpSift filter \
         "CLNSIG =~ 'Pathogenic'" \
         ${vcf_file} \
         > ${sample_id}.${caller}.p.vcf
 
-    ${params.snpsift} filter \
+    SnpSift filter \
         "((exists LOF) | (CLNSIG =~ 'Pathogenic'))" \
         ${vcf_file} \
         > ${sample_id}.${caller}.lofp.vcf

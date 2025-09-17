@@ -7,7 +7,7 @@ process DEEPVARIANT {
     // This version works on NGC only. To run locally, comment out "singularity exec" and use "run_deepvariant" directly.
 
     conda "$projectDir/envs/deepvar/environment.yaml"
-    container params.container.deepvariant
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.deepvariant : params.container.docker.deepvariant
 
     publishDir "${params.outputDir}/log/deepvariant/", pattern: "${sample_id}.DV.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.DV.vcf.gz", mode:'copy'
@@ -26,8 +26,7 @@ process DEEPVARIANT {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    # singularity exec --bind ${PWD} --bind ${ref_dir} --bind ${target_dir} /services/tools/deepvariant/1.5.0/deepvariant_1.5.0.sif \
-    run_deepvariant \
+    /opt/deepvariant/bin/run_deepvariant
         --ref=${db} \
         --reads=$bam_file \
         --output_vcf=${sample_id}.DV.vcf.gz \

@@ -1,7 +1,7 @@
 process FILTER {
     label 'process_low'
     conda "$projectDir/envs/bcftools/environment.yaml"
-    container params.container.bcftools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bcftools : params.container.docker.bcftools
 
     publishDir "${params.outputDir}/variants/filtered/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'
 

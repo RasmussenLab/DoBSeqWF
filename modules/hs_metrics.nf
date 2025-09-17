@@ -4,7 +4,7 @@ process HS_METRICS {
     // Collect HSMetrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/hs_metrics/", pattern: "${sample_id}*.hs.txt", mode:'copy'
 

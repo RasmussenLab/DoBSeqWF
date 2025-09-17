@@ -1,7 +1,7 @@
 process PIN_BASIC {
     label 'process_low'
     conda "$projectDir/envs/filter_variants/environment.yaml"
-    container params.container.filter_variants
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.filter_variants : params.container.docker.filter_variants
 
     publishDir "${params.outputDir}/variant_compilation/", mode:'copy', pattern: "*variants.tsv"
 

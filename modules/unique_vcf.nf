@@ -3,7 +3,7 @@ process UNIQUE_VCF {
     // Merge, deduplicate, remove sample information, and index a set of VCF files.
 
     conda "$projectDir/envs/bcftools/environment.yaml"
-    container params.container.bcftools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bcftools : params.container.docker.bcftools
 
     publishDir "${params.outputDir}/vep_annotate/", pattern: "unique.vcf.*", mode:'copy'
 

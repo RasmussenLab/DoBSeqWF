@@ -8,7 +8,7 @@ process SNPEFF {
     // -noMotif avoids adding motif annotations.
 
     conda "$projectDir/envs/snpeff/environment.yaml"
-    container params.container.snpeff
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.snpeff : params.container.docker.snpeff
 
     publishDir "${params.outputDir}/log/snpeff/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/log/snpeff/stats/", pattern: "${sample_id}.${caller}_snpeff_stats.csv", mode:'copy'
@@ -27,7 +27,7 @@ process SNPEFF {
 
     script:
     """
-    ${params.snpeff}                                        \
+    snpEff                                                  \
         ${snpeff_db}                                        \
         -c ${snpeff_config}                                 \
         -csvStats "${sample_id}.${caller}_snpeff_stats.csv" \

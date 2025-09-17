@@ -3,7 +3,7 @@ process FLAGSTAT {
     tag "Flagstat - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     publishDir "${params.outputDir}/log/flagstat/", pattern: "${sample_id}*.flagstat", mode:'copy'
 

@@ -3,7 +3,7 @@ process BGZIP {
     tag "VCF->VCF.gz - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     publishDir "${params.outputDir}/norm_bgzip_idx/", pattern: "*vcf.*", mode:'copy'
 

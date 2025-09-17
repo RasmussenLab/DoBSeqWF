@@ -4,7 +4,7 @@ process LOFREQ {
     // Call variants using Lofreq - call parallel
     
     conda "$projectDir/envs/lofreq/environment.yaml"
-    container params.container.lofreq
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.lofreq : params.container.docker.lofreq
 
     publishDir "${params.outputDir}/log/lofreq/", pattern: "${sample_id}.lofreq.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'

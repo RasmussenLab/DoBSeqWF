@@ -17,7 +17,7 @@ process UMI_METRICS {
     // DS: double-stranded tag families where membership is collapsed across single-stranded tag families from the same double-stranded source molecule; i.e. 50/A and 50/B become one family
 
     conda "$projectDir/envs/fgbio/environment.yaml"
-    container params.container.fgbio
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.fgbio : params.container.docker.fgbio
 
     publishDir "${params.outputDir}/log/umi_metrics/logs/", pattern: "${sample_id}.*.txt", mode:'copy'
     publishDir "${params.outputDir}/log/umi_metrics/plots/", pattern: "${sample_id}.*.pdf", mode:'copy'
@@ -34,7 +34,7 @@ process UMI_METRICS {
 
     script:
     """
-    ${params.fgbio} --tmp-dir=. --compression 1 --async-io CollectDuplexSeqMetrics   \
+    fgbio --tmp-dir=. --compression 1 --async-io CollectDuplexSeqMetrics   \
         --input=${bam_file}         \
         --output="${sample_id}"
     """

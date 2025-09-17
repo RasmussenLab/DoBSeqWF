@@ -20,6 +20,8 @@
 #PBS -j oe
 #PBS -N nextflow
 
+module load nextflow/25.04.6 GitPython
+
 ## exit if any errors or unset variables are encountered
 set -euo pipefail
 
@@ -29,15 +31,13 @@ version=2.0
 root=/ngc/tools/ngctools/${name}/${version}
 data=/ngc/shared/${name}
 
-export NXF_SINGULARITY_CACHEDIR=${data}/containers
+export NXF_SINGULARITY_CACHEDIR=/ngc/projects2/dp_00005/data/dwf/bin/container_cache
 export NXF_ASSETS=${root}/pipelines
 export NXF_SCM_FILE=${root}/scm
 export NXF_PLUGINS_DIR=${data}/plugins
 
 # Disable interactive logging
 #export NXF_ANSI_LOG=false
-
-module load tools ngctools jdk/21.0.1 nextflow/24.08.0-edge
 
 nextflow_essential_params='-profile ngc -resume'
 

@@ -3,7 +3,7 @@ process MULTIQC {
     tag "MultiQC everything"
 
     conda "$projectDir/envs/multiqc/environment.yaml"
-    container params.container.multiqc
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.multiqc : params.container.docker.multiqc
 
     publishDir "${params.outputDir}/log/multiqc/", mode:'copy'
 

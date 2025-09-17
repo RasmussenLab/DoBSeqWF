@@ -4,7 +4,7 @@ process FREEBAYES {
     // Call variants using Lofreq - call parallel
     
     conda "$projectDir/envs/freebayes/environment.yaml"
-    container params.container.freebayes
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.freebayes : params.container.docker.freebayes
 
     publishDir "${params.outputDir}/log/freebayes/", pattern: "${sample_id}.freebayes.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.freebayes.vcf.gz", mode:'copy'
