@@ -4,6 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+import static Utils.indexedFileChannel
+
 include { INDEX_VCF                 } from '../modules/index_vcf'
 include { DROP_PL                   } from '../modules/drop_pl'
 include { VARTABLE                  } from '../modules/vartable'
@@ -12,6 +14,13 @@ include { BGZIP                     } from '../modules/bgzip'
 include { PIN_BASIC                 } from '../modules/pin_basic'
 include { UNIQUE_VCF                } from '../modules/unique_vcf'
 include { VEP                       } from '../modules/vep'
+
+alphamissense_ch = indexedFileChannel(params.alphamissense_tsv, '.tbi')
+clinvar_ch = indexedFileChannel(params.clinvar_db, '.tbi')
+danmac_db_ch = indexedFileChannel(params.danmac_db, '.tbi')
+blacklist_bed_ch = indexedFileChannel(params.blacklist_bed, '.tbi')
+repeatmasker_bed_ch = indexedFileChannel(params.repeatmasker_bed, '.tbi')
+gnomad_vcf_ch = indexedFileChannel(params.gnomad_vcf, '.tbi')
 
 workflow PINPOINT_TAB {
     take:
@@ -34,17 +43,17 @@ workflow PINPOINT_TAB {
         VEP(
             UNIQUE_VCF.out.vcf_file,
             reference_genome,
-            params.vep_cache           ?: [],  // cache
-            params.utr_file            ?: [],  // utr
-            params.alphamissense_tsv   ?: [],  // alphamissense
-            params.clinvar_db          ?: [],  // clinvar
-            params.danmac_db           ?: [],  // danmac
-            params.blacklist_bed       ?: [],  // blacklist
-            params.repeatmasker_bed    ?: [],  // repeatmasker
-            params.gnomad_vcf          ?: [],  // gnomad
-            params.loftee_gerp_bw      ?: [],  // loftee gerp
-            params.loftee_human_ancestor ?: [],// loftee human ancestor
-            params.loftee_sqlite       ?: []   // loftee conservation (sqlite)
+            params.vep_cache                ?: [],
+            params.utr_file                 ?: [],
+            alphamissense_ch                ?: [],
+            clinvar_ch,
+            danmac_db_ch,
+            blacklist_bed_ch,
+            repeatmasker_bed_ch,
+            gnomad_vcf_ch,
+            params.loftee_gerp_bw           ?: [],
+            params.loftee_human_ancestor    ?: [],
+            params.loftee_sqlite            ?: []
         )
     }
 }
