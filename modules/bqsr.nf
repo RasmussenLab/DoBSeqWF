@@ -3,7 +3,7 @@ process BQSR {
     tag "Calculate score recalibration - $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     input:
     tuple val(sample_id), path(bam_file)

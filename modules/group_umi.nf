@@ -3,7 +3,7 @@ process GROUP_UMI {
     tag "Group reads by UMI - $sample_id"
 
     conda "$projectDir/envs/fgbio/environment.yaml"
-    container params.container.fgbio
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.fgbio : params.container.docker.fgbio
 
     publishDir "${params.outputDir}/log/group_umi/", pattern: "${sample_id}.family_size_histogram.txt", mode:'copy'
 
@@ -16,7 +16,7 @@ process GROUP_UMI {
 
     script:
     """
-    ${params.fgbio} --tmp-dir=. --compression 1 --async-io GroupReadsByUmi           \
+    fgbio --tmp-dir=. --compression 1 --async-io GroupReadsByUmi           \
         --strategy=paired           \
         --input=${bam_file}         \
         --output="${sample_id}.bam" \

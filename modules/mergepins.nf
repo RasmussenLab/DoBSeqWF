@@ -4,7 +4,7 @@ process MERGE_PINS {
     // Merge pinpointables into a single VCF
 
     conda "$projectDir/envs/bcftools/environment.yaml"
-    container params.container.bcftools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bcftools : params.container.docker.bcftools
 
     publishDir "${params.outputDir}/", mode:'copy'
 

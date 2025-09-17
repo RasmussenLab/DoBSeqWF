@@ -4,8 +4,8 @@ process ALIGNMENT {
     // Align reads to the reference genome using BWA, convert to BAM and sort.
 
     conda "$projectDir/envs/bwa/environment.yaml"
-    container params.container.bwa
-
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bwa : params.container.docker.bwa
+    
     publishDir "${params.outputDir}/log/mapping/", pattern: "${sample_id}.log", mode:'copy'
 
     input:

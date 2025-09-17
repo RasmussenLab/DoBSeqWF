@@ -15,17 +15,18 @@ include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
 include { MERGE_PINS                } from '../modules/mergepins'
 
-
 if (params.filter) {
     snv_model = Channel.fromPath("$projectDir/assets/filter/logistic_regression_snv_model.joblib", checkIfExists: true).collect()
     indel_model = Channel.fromPath("$projectDir/assets/filter/random_forest_indel_model.joblib", checkIfExists: true).collect()
     model_class = Channel.fromPath("$projectDir/assets/filter/model.py", checkIfExists: true).collect()
 }
 
-workflow PINPOINT {
+workflow PINPOINT_VCF {
     take:
     vcf_file
+    pooltable
     decode_table
+    matrix_context
     reference_genome
     
     main:
@@ -82,7 +83,6 @@ workflow PINPOINT {
         vartables,
         decode_table,
         'GATK')
-    
     VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
     MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
 

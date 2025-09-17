@@ -4,7 +4,7 @@ process GENOMICSDB {
     // Merge gVCF files into a single GenomicsDB
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/", pattern: "genomicsdb.log", mode:'copy'
     publishDir "${params.outputDir}/", pattern: "./genomicsdb", mode:'copy'

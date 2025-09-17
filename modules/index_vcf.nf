@@ -3,7 +3,7 @@ process INDEX_VCF {
     tag "Index VCF $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/index_vcf/", pattern: "${sample_id}.${caller}.log", mode:'copy'
 

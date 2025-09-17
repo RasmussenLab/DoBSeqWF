@@ -4,8 +4,8 @@ process SNPSIFT_CLINVAR {
 
     // Add ClinVar annotations to a VCF file using SnpSift.
 
-    conda "$projectDir/envs/snpeff/environment.yaml"
-    container params.container.snpeff
+    conda "$projectDir/envs/snpsift/environment.yaml"
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.snpsift : params.container.docker.snpsift
 
     publishDir "${params.outputDir}/log/snpsift_clinvar/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/annotated_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
@@ -22,7 +22,7 @@ process SNPSIFT_CLINVAR {
     script:
     def db = file(params.clinvar_db).getName()
     """
-    ${params.snpsift} annotate                          \
+    SnpSift annotate                          \
         ${db}                                           \
         ${vcf_file}                                     \
         > ${sample_id}.${caller}.vcf          \

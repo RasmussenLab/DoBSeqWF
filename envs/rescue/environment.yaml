@@ -1,0 +1,9 @@
+name: rescue
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - pip:
+    - marbl-pool==0.2.0

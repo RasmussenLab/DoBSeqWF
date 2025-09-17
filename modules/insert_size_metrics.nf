@@ -4,7 +4,7 @@ process INSERT_SIZE_METRICS {
     // Collect insert size metrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/insert_size_metrics/", pattern: "${sample_id}*.insert.txt", mode:'copy'
     publishDir "${params.outputDir}/log/insert_size_metrics/", pattern: "${sample_id}.pdf", mode:'copy'

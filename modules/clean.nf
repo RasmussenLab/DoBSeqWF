@@ -3,7 +3,7 @@ process CLEAN {
     tag "Clean bam file - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     input:
     tuple val(sample_id), path(bam_file)

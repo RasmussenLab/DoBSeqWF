@@ -4,7 +4,7 @@ process ALIGNMENT_METRICS {
     // Collect alignment metrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/alignment_metrics/", pattern: "${sample_id}*.align.txt", mode:'copy'
 

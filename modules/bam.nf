@@ -3,7 +3,7 @@ process BAM {
     tag "CRAM->BAM - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     input:
     tuple val(sample_id), path(cram_file)

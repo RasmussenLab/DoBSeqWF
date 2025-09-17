@@ -1,0 +1,7 @@
+name: snpsift
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - snpsift=5.1
