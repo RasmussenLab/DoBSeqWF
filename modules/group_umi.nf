@@ -16,7 +16,7 @@ process GROUP_UMI {
 
     script:
     """
-    ${params.fgbio} --tmp-dir=. --compression 1 --async-io GroupReadsByUmi           \
+    fgbio --tmp-dir=. --compression 1 --async-io GroupReadsByUmi           \
         --strategy=paired           \
         --input=${bam_file}         \
         --output="${sample_id}.bam" \
