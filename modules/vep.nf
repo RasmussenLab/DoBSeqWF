@@ -66,7 +66,7 @@ process VEP {
     grep '^#[^#]' "annotations.tsv" >> annotations_w_varid.tsv
     # Body
     paste                                       \
-        <(grep -F -v '*' "variant_keys.txt")    \
+        <(grep -F -v '*' "${variant_keys}")    \
         <(grep -v '^#'   "annotations.tsv")             \
         >> annotations_w_varid.tsv
     """
