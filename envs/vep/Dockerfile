@@ -35,7 +35,7 @@ USER root
 
 # Set up Perl environment
 ENV PERL_MM_USE_DEFAULT=1
-ENV PERL5LIB=/opt/vep/perl5/lib/perl5:$PERL5LIB
+ENV PERL5LIB=/plugins/loftee:/opt/vep/perl5/lib/perl5:$PERL5LIB
 
 # Install system dependencies
 RUN apt-get update && apt-get -y install \
@@ -66,8 +66,8 @@ RUN cpanm --local-lib=/opt/vep/perl5 local::lib && \
 USER vep
 
 # Verify installations
-RUN samtools --version && \
-    ls -la /plugins/loftee/
+RUN samtools --version && ls -la /plugins/loftee/ && \
+    perl -e 'use lib q(/plugins/loftee); require q(LoF.pm); require q(utr_splice.pl); print qq(LoFTEE load OK\n)'
 
 # Set working directory
 WORKDIR /opt/vep
