@@ -26,7 +26,7 @@ process DEEPVARIANT {
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """
-    /opt/deepvariant/bin/run_deepvariant
+    /opt/deepvariant/bin/run_deepvariant \
         --ref=${db} \
         --reads=$bam_file \
         --output_vcf=${sample_id}.DV.vcf.gz \
