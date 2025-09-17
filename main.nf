@@ -54,7 +54,7 @@ pooltable_ch = Channel
     .splitCsv(sep: '\t')
     .map { row -> tuple(row[0], [file(row[2]), file(row[3])]) }
 
-if (params.step == 'calling') {
+if (params.step == 'calling' || (params.step == 'pinpoint' && params.variant_rescue)) {
     cramtable_ch = Channel
         .fromPath(params.cramtable)
         .splitCsv(sep: '\t')
@@ -90,7 +90,7 @@ workflow {
         } else {
             bam_file_w_index_ch = MAPPING(pooltable_ch, reference_genome_ch, bedfile_ch)
         }
-    } else if (params.step == 'calling' || (params.step == 'pinpoint' && params.pileup_calling)) {
+    } else if (params.step == 'calling' || (params.step == 'pinpoint' && params.variant_rescue)) {
         BAM(cramtable_ch, reference_genome_ch)
         bam_file_w_index_ch = INDEX(BAM.out.bam_file)
     }
