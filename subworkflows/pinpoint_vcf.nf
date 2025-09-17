@@ -14,11 +14,6 @@ include { DISCARD                   } from '../modules/discard'
 include { ANNOTATION                } from '../subworkflows/annotation'
 include { VARTABLE_PINS             } from '../modules/vartable_pins'
 include { MERGE_PINS                } from '../modules/mergepins'
-include { BGZIP                     } from '../modules/bgzip'
-include { PIN_BASIC                 } from '../modules/pin_basic'
-include { UNIQUE_VCF                } from '../modules/unique_vcf'
-include { VEP                       } from '../modules/vep'
-
 
 if (params.filter) {
     snv_model = Channel.fromPath("$projectDir/assets/filter/logistic_regression_snv_model.joblib", checkIfExists: true).collect()
@@ -26,7 +21,7 @@ if (params.filter) {
     model_class = Channel.fromPath("$projectDir/assets/filter/model.py", checkIfExists: true).collect()
 }
 
-workflow PINPOINT {
+workflow PINPOINT_VCF {
     take:
     vcf_file
     pooltable
@@ -90,30 +85,6 @@ workflow PINPOINT {
         'GATK')
     VARTABLE_PINS(PINPY.out.vcf_unique_pins.flatten())
     MERGE_PINS(PINPY.out.vcf_unique_2d_pins)
-
-    // New pinpoint-flow
-    BGZIP(vcf_ch)
-    BGZIP.out.bgzf_file
-       .map { sample, vcf, index -> tuple(vcf, index) }
-       .collect()
-       .set { basic_input }
-    PIN_BASIC(basic_input,matrix_context)
-    UNIQUE_VCF(basic_input)
-    VEP(
-        UNIQUE_VCF.out.vcf_file,
-        reference_genome,
-        params.vep_cache           ?: [],  // cache
-        params.utr_file            ?: [],  // utr
-        params.alphamissense_tsv   ?: [],  // alphamissense
-        params.clinvar_db          ?: [],  // clinvar
-        params.danmac_db           ?: [],  // danmac
-        params.blacklist_bed       ?: [],  // blacklist
-        params.repeatmasker_bed    ?: [],  // repeatmasker
-        params.gnomad_vcf          ?: [],  // gnomad
-        params.loftee_gerp_bw      ?: [],  // loftee gerp
-        params.loftee_human_ancestor ?: [],// loftee human ancestor
-        params.loftee_sqlite       ?: []   // loftee conservation (sqlite)
-        )
 
     emit:
     pinned_variants = PINPY.out.lookup_table

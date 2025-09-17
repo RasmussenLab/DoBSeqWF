@@ -35,7 +35,8 @@ include { MATRIX_CONTEXT            } from './modules/matrix_context'
 
 // Pinpoint methods
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
-include { PINPOINT                  } from './subworkflows/pinpoint'
+include { PINPOINT_VCF              } from './subworkflows/pinpoint_vcf'
+include { PINPOINT_TAB              } from './subworkflows/pinpoint_tab'
 include { VARIANT_RESCUE            } from './subworkflows/variant_rescue'
 
 // Test
@@ -132,8 +133,13 @@ workflow {
                 matrix_context = MATRIX_CONTEXT.out.json
                 decode_table = file(params.decodetable)
             }
-            PINPOINT(gatk_ch, pooltable, decode_table, matrix_context, reference_genome_ch)
-            pin_ch = PINPOINT.out.pinned_variants
+            PINPOINT_VCF(gatk_ch, pooltable, decode_table, matrix_context, reference_genome_ch)
+            pin_ch = PINPOINT_VCF.out.pinned_variants
+            
+            if (params.pinpoint_tab) {
+                PINPOINT_TAB(gatk_ch, matrix_context, reference_genome_ch)
+            }
+
             if (params.variant_rescue) {
                 VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, pooltable, reference_genome_ch, bedfile_ch)
             }
