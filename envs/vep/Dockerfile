@@ -30,12 +30,11 @@ RUN git clone -b grch38 https://github.com/konradjk/loftee.git /loftee
 
 FROM ensemblorg/ensembl-vep:release_111.0 AS runtime
 
-# Switch to root to install system packages and dependencies
 USER root
 
 # Set up Perl environment
 ENV PERL_MM_USE_DEFAULT=1
-ENV PERL5LIB=/plugins/loftee:/opt/vep/perl5/lib/perl5:$PERL5LIB
+ENV PERL5LIB=/plugins:/opt/vep/perl5/lib/perl5:$PERL5LIB
 
 # Install system dependencies
 RUN apt-get update && apt-get -y install \
@@ -56,18 +55,15 @@ COPY --from=build /usr/local/bin/samtools /usr/local/bin/samtools
 RUN chmod +x /usr/local/bin/samtools
 
 # Copy LOFTEE plugins
-COPY --from=build /loftee/ /plugins/loftee/
+COPY --from=build /loftee/ /plugins
 
 # Install additional Perl dependencies as root
 RUN cpanm --local-lib=/opt/vep/perl5 local::lib && \
     cpanm --local-lib=/opt/vep/perl5 --force DBD::SQLite Bio::Perl
 
-# Switch back to vep user
-USER vep
-
 # Verify installations
-RUN samtools --version && ls -la /plugins/loftee/ && \
-    perl -e 'use lib q(/plugins/loftee); require q(LoF.pm); require q(utr_splice.pl); print qq(LoFTEE load OK\n)'
+RUN samtools --version && ls -la /plugins/ && \
+    perl -e 'use lib q(/plugins); require q(LoF.pm); require q(utr_splice.pl); print qq(LoFTEE load OK\n)'
 
 # Set working directory
 WORKDIR /opt/vep

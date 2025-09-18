@@ -6,6 +6,6 @@ COPY environment.yaml /tmp/environment.yml
 
 RUN micromamba install -y -n base -f /tmp/environment.yml && micromamba clean -a -y
 
-SHELL ["micromamba", "run", "-n", "base", "/bin/bash", "-c"]
+ENV PATH="/opt/conda/bin:${PATH}"
 
 CMD ["R", "--version"]
