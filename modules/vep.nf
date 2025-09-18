@@ -36,7 +36,7 @@ process VEP {
     def blackl = blacklist ? "--custom ${blacklist},blacklist,bed,overlap,0,4" : ""
     def repeatm = repeatmasks ? "--custom ${repeatmasks},repeats,bed,overlap,0,4" : ""
     def gnom = gnomad ? "--custom ${gnomad},gnomAD,vcf,exact,0,AC_joint_nfe,AN_joint_nfe,AF_joint_nfe,AC_genomes_nfe,AN_genomes_nfe,AF_genomes_nfe,AC_exomes_nfe,AN_exomes_nfe,AF_exomes_nfe,grpmax_joint,AC_grpmax_joint,AF_grpmax_joint,grpmax_genomes,AC_grpmax_genomes,AF_grpmax_genomes,grpmax_exomes,AC_grpmax_exomes,AF_grpmax_exomes" : ""
-    def loftee_plugin_dir = workflow.containerEngine ? "/plugins/loftee" : "./loftee"
+    def loftee_plugin_dir = workflow.containerEngine ? "/plugins" : "./loftee"
     def loft = loftee_gerp_bigwig && loftee_human_ancestor && loftee_conservation ? "--plugin LoF,loftee_path:${loftee_plugin_dir},gerp_bigwig:${loftee_gerp_bigwig},human_ancestor_fa:${loftee_human_ancestor},conservation_file:${loftee_conservation}" : ""
     """
     vep \
