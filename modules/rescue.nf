@@ -16,12 +16,13 @@ process RESCUE {
     path "predictions.tsv", emit: probabilities
 
     script:
-    def decode = decodetable ? "--decode ${decodetable}" : ""
+    def decode = decodetable ? "--decodetable ${decodetable}" : ""
     """
     marbl                               \
         --vcf-folder .                  \
         --mpileup-folder .              \
         --sampletable ${sampletable}    \
+        ${decode}                       \
         --output .
     """
 
