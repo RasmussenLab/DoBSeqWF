@@ -37,7 +37,9 @@ include { MATRIX_CONTEXT            } from './modules/matrix_context'
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
 include { PINPOINT_VCF              } from './subworkflows/pinpoint_vcf'
 include { PINPOINT_TAB              } from './subworkflows/pinpoint_tab'
+
 include { VARIANT_RESCUE            } from './subworkflows/variant_rescue'
+include { REPORT                    } from './modules/report'
 
 // Test
 include { TEST                      } from './modules/test'
@@ -67,6 +69,9 @@ if (params.step == 'pinpoint') {
         .splitCsv(sep: '\t')
         .map { row -> tuple(row[0], file(row[1]), row[2]) }
 }
+
+rescue_probabilities = Channel.value([])
+report_rmd = Channel.fromPath("$projectDir/bin/report.Rmd", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,10 +143,21 @@ workflow {
             
             if (params.pinpoint_tab) {
                 PINPOINT_TAB(gatk_ch, matrix_context, reference_genome_ch)
-            }
 
-            if (params.variant_rescue) {
-                VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, pooltable, reference_genome_ch, bedfile_ch)
+                if (params.variant_rescue) {
+                    VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, pooltable, decode_table, reference_genome_ch, bedfile_ch)
+                    rescue_probabilities = VARIANT_RESCUE.out.rescue_probabilities
+                }
+
+                if (params.pinpoint_report) {
+                    REPORT(
+                        report_rmd,
+                        matrix_context,
+                        PINPOINT_TAB.out.pool_variants,
+                        PINPOINT_TAB.out.pinpoint_variants,
+                        PINPOINT_TAB.out.annotations,
+                        rescue_probabilities)
+                }
             }
         }
     }

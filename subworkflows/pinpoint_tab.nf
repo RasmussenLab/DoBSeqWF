@@ -22,6 +22,8 @@ blacklist_bed_ch = indexedFileChannel(params.blacklist_bed, '.tbi')
 repeatmasker_bed_ch = indexedFileChannel(params.repeatmasker_bed, '.tbi')
 gnomad_vcf_ch = indexedFileChannel(params.gnomad_vcf, '.tbi')
 
+annotations_ch = Channel.value([]) 
+
 workflow PINPOINT_TAB {
     take:
     vcf_file
@@ -55,5 +57,10 @@ workflow PINPOINT_TAB {
             params.loftee_human_ancestor    ?: [],
             params.loftee_sqlite            ?: []
         )
+        annotations_ch = VEP.out.annotations_file
     }
+    emit:
+    pinpoint_variants = PIN_BASIC.out.pinpoint_variants
+    pool_variants = PIN_BASIC.out.pool_variants
+    annotations = annotations_ch
 }
