@@ -75,7 +75,7 @@ rescue <-
 
 pinvars <- 
   pinvars %>% 
-  full_join(rescue, by=c('uvarid','row_id','column_id','varid')) 
+  full_join(rescue, by=c('uvarid','row_id','column_id','varid','row_label','column_label','sample_alias')) 
 ```
 
 ```{r eval=have(params$annotations)}
