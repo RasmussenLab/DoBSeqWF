@@ -10,8 +10,8 @@ process PIN_BASIC {
     path matrix_context
 
     output:
-    path "all_pool_variants.tsv"
-    path "pinpoint_variants.tsv"
+    path "all_pool_variants.tsv", emit: pool_variants
+    path "pinpoint_variants.tsv", emit: pinpoint_variants
 
     script:
     """

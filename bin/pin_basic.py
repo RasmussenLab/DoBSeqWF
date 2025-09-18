@@ -10,7 +10,7 @@ from typing import Dict, Set, List, Tuple, Optional, Any, Union
 
 @dataclass
 class VariantEntry:
-    VARID: str
+    varid: str
     CHROM: str
     POS: int
     REF: str
@@ -146,7 +146,7 @@ def collect_variant_entries(vcf_path: str, sample_id: Optional[str] = None) -> L
 
         # Site-level fields
         entry = VariantEntry(
-            VARID=f"{rec.chrom}:{rec.pos}:{rec.ref}:{alt}",
+            varid=f"{rec.chrom}:{rec.pos}:{rec.ref}:{alt}",
             CHROM=rec.chrom,
             POS=rec.pos,
             REF=rec.ref,
@@ -202,7 +202,7 @@ def get_variant_entry(vcf_path: str, variant_id: str, sample_id: Optional[str] =
                 
                 # Site-level fields
                 entry = VariantEntry(
-                    VARID=variant_id,
+                    varid=variant_id,
                     CHROM=rec.chrom,
                     POS=rec.pos,
                     REF=rec.ref,
@@ -391,8 +391,8 @@ def main():
     # Create table with pinpointables only:
     pins = pin(vcf_folder=pool_vcfs_path, matrix_context=mc, caller=caller)
     
-    common_fields = ['VARID','CHROM','POS','REF','ALT']
-    variant_entry_header_fields = [f"{dim}.{f.name}" for f in fields(VariantEntry) for dim in ["row","column"] if f not in common_fields]
+    common_fields = ['varid','CHROM','POS','REF','ALT']
+    variant_entry_header_fields = [f"{dim}.{f.name}" for dim in ["row","column"] for f in fields(VariantEntry) if f.name not in common_fields]
     header = ["uvarid", "sample_alias", "sample_id", "row_id", "row_index", "row_label", "column_id", "column_index", "column_label", *common_fields, *variant_entry_header_fields]
 
     with open(output_path / 'pinpoint_variants.tsv', 'w') as fout:
@@ -410,9 +410,9 @@ def main():
                 row_info = get_variant_entry(vcf_path=pool_vcfs_path / (f"{row_id}.{caller}.vcf.gz"), variant_id=pinpoint)
                 col_info = get_variant_entry(vcf_path=pool_vcfs_path / (f"{col_id}.{caller}.vcf.gz"), variant_id=pinpoint)
                 
-                assert row_info.VARID == col_info.VARID, "Row and column variant IDs do not match"
+                assert row_info.varid == col_info.varid, "Row and column variant IDs do not match"
                 
-                uvarid = f"{sample_alias}:{row_info.VARID}"
+                uvarid = f"{sample_alias}:{row_info.varid}"
                 print(
                     uvarid, sample_alias, sample_id, row_id, row_idx, row_label, col_id, col_idx, col_label,
                     *[getattr(row_info, col) for col in variant_entry_fields],

@@ -16,6 +16,7 @@ workflow VARIANT_RESCUE {
     vcf_file
     bam_file_w_index
     pooltable
+    decodetable
     reference_genome
     bedfile
     
@@ -30,8 +31,8 @@ workflow VARIANT_RESCUE {
        .collect()
        .set { vcf_files }
     MPILEUP(bam_file_w_index, reference_genome, bedfile)
-    RESCUE(pooltable, vcf_files, MPILEUP.out.mpileup_file.collect())
+    RESCUE(pooltable, decodetable, vcf_files, MPILEUP.out.mpileup_file.collect())
 
     emit:
-    pinned_variants = Channel.empty()
+    rescue_probabilities = RESCUE.out.probabilities
 }

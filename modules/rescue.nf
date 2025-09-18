@@ -8,13 +8,15 @@ process RESCUE {
 
     input:
     path sampletable
+    path decodetable
     path vcf_files
     path mpileup
 
     output:
-    path "predictions.tsv"
+    path "predictions.tsv", emit: probabilities
 
     script:
+    def decode = decodetable ? "--decode ${decodetable}" : ""
     """
     marbl                               \
         --vcf-folder .                  \
