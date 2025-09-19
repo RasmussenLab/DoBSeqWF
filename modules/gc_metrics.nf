@@ -3,7 +3,7 @@ process GC_METRICS {
     tag "$sample_id"
     // Collect gc bias metrics for bam file
 
-    conda "$projectDir/envs/gatk4/environment.yaml"
+    conda "$projectDir/envs/picard/environment.yaml"
     container workflow.containerEngine == 'singularity' ? params.container.singularity.picard : params.container.docker.picard
 
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.txt", mode:'copy'

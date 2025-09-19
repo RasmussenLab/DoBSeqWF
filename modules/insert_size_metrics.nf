@@ -3,7 +3,7 @@ process INSERT_SIZE_METRICS {
     tag "$sample_id"
     // Collect insert size metrics for bam file
 
-    conda "$projectDir/envs/gatk4/environment.yaml"
+    conda "$projectDir/envs/picard/environment.yaml"
     container workflow.containerEngine == 'singularity' ? params.container.singularity.picard : params.container.docker.picard
 
     publishDir "${params.outputDir}/log/insert_size_metrics/", pattern: "${sample_id}*.insert.txt", mode:'copy'

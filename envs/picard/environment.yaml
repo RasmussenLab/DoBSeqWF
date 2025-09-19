@@ -1,0 +1,8 @@
+name: picard
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base=4.3.0
+  - bioconda::picard=4.6.1.0
