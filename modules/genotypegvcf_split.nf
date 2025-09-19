@@ -19,8 +19,9 @@ process GENOTYPEGVCF_SPLIT {
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     def id = interval ? "${sample_id}.${interval}" : sample_id
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"                   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"                   \
         GenotypeGVCFs                                               \
         -R ${db}                                                    \
         -V ${vcf_file}                                              \

@@ -23,8 +23,9 @@ process HAPLOTYPECALLER_SPLIT {
     def id = interval ? "${sample_id}.${interval}" : sample_id
     def add_intervals = interval ? "-L ${interval}" : ""
     def add_intersection = interval ? "--interval-set-rule INTERSECTION" : ""
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData" HaplotypeCaller   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" HaplotypeCaller   \
         -R ${db}                                                    \
         -I ${bam_file}                                              \
         -L ${interval_list}                             \

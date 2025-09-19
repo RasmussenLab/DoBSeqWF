@@ -19,9 +19,10 @@ process GENOMICSDB {
     path "genomicsdb.log"
 
     script:
+    def avail_mem = (task.memory.mega*0.8).intValue()
     input_files_command = vcfs.collect(){"--variant ${it}"}.join(' ')
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"   \
         GenomicsDBImport                            \
         $input_files_command                        \
         --genomicsdb-workspace-path genomicsdb      \

@@ -21,8 +21,9 @@ process GENOTYPEGVCF {
     script:
     def db = file(params.reference_genome).getName() + ".fna"
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".GATK.vcf.gz")
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"                   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"                   \
         GenotypeGVCFs                                               \
         -R ${db}                                                    \
         -V ${gvcf_file}                                             \

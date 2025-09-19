@@ -20,8 +20,9 @@ process MARKDUPLICATES {
     script:
     def log_filename = log_suffix == "" ? "${sample_id}.dupMetric.log" : "${sample_id}_${log_suffix}.dupMetric.log"
     def optical_only = optical_only_tag ? "--duplicate-tagging-policy OpticalOnly" : ""
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options -Xmx16g MarkDuplicates  \
+    gatk --java-options -Xmx${avail_mem}M MarkDuplicates  \
         --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
         ${optical_only}                         \
 	    --TMP_DIR .                             \

@@ -20,8 +20,9 @@ process HAPLOTYPECALLER {
 
     script:
     def db = file(params.reference_genome).getName() + ".fna"
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData" HaplotypeCaller   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" HaplotypeCaller   \
         -R ${db}                                                    \
         -I ${bam_file}                                              \
         -L ${bedfile}                                               \
