@@ -4,7 +4,7 @@ process GC_METRICS {
     // Collect gc bias metrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.picard : params.container.docker.picard
 
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.txt", mode:'copy'
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.summary.txt", mode:'copy'
@@ -24,7 +24,7 @@ process GC_METRICS {
     def log_filename = log_suffix == "" ? "${sample_id}.gc.txt" : "${sample_id}_${log_suffix}.gc.txt"
     def log_filename_summary = log_suffix == "" ? "${sample_id}.gc.summary.txt" : "${sample_id}_${log_suffix}.gc.summary.txt"
     """
-    gatk CollectGcBiasMetrics     \
+    picard CollectGcBiasMetrics     \
         -I ${bam_file}                      \
         -O ${log_filename}                  \
         -S ${log_filename_summary}         \

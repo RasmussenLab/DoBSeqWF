@@ -27,7 +27,6 @@ include { HS_METRICS                } from '../modules/hs_metrics'
 include { ALIGNMENT_METRICS         } from '../modules/alignment_metrics'
 include { GC_METRICS                } from '../modules/gc_metrics'
 include { INSERT_SIZE_METRICS       } from '../modules/insert_size_metrics'
-include { DUPLICATE_METRICS         } from '../modules/duplicate_metrics'
 
 include { MULTIQC                   } from '../modules/multiqc'
 
@@ -75,7 +74,6 @@ workflow MAPPING {
         ALIGNMENT_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome, "")
         GC_METRICS(ALIGNMENT.out.raw_bam_file, reference_genome, "")
         INSERT_SIZE_METRICS(ALIGNMENT.out.raw_bam_file, "")
-        DUPLICATE_METRICS(ALIGNMENT.out.raw_bam_file, "")
 
         qc_ch = qc_ch.mix(
             RAW_DEPTH.out.region_dist,
