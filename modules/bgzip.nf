@@ -21,8 +21,8 @@ process BGZIP {
     
     stub:
     """
-    touch "${sample_id}.vcf.gz"
-    touch "${sample_id}.vcf.gz.tbi"
+    touch "${vcf_file}.gz"
+    touch "${vcf_file}.gz.tbi"
     """
 }
 
