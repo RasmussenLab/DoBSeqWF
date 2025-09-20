@@ -5,4 +5,4 @@ channels:
   - defaults
 dependencies:
   - r-base=4.3.0
-  - bioconda::picard=4.6.1.0
+  - bioconda::picard=3.4.0
