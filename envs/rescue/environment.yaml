@@ -6,4 +6,4 @@ channels:
 dependencies:
   - python=3.11
   - pip:
-    - marbl-pool==0.3.0
+    - marbl-pool==0.4.0
