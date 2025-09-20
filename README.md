@@ -43,19 +43,24 @@ Configurations can be supplied a configuration file, see ```config.json```, and 
 nextflow run main.nf                                       \
   (-with-docker/-with-apptainer/-with-conda)               \
   --pooltable <path to pool fastq file table>              \
-  --decodetable <path to pool decode tsv>                  \
+  (--decodetable <path to pool decode tsv>                 \)
   --reference_genome <path to indexed reference genome>    \
   --bedfile <path to bedfile with target regions>          \
   --ploidy <integer>
 ```
-The ```pooltable.tsv``` should connect (user assigned) pool id's to input FASTQ files; one entry for each pool.
+The ```pooltable.tsv``` should connect (user assigned) pool id's and their row/column arrangement to input FASTQ files; one tab-separated line for each pool.
 ```Bash
-pool_row_1  path/to/sample1_R1.fq.gz  path/to/sample1_R2.fq.gz
-pool_column_1  path/to/sample2_R1.fq.gz  path/to/sample2_R2.fq.gz
+pool_1  row path/to/sample1_R1.fq.gz  path/to/sample1_R2.fq.gz
+pool_2  row path/to/sample2_R1.fq.gz  path/to/sample2_R2.fq.gz
+pool_3  column  path/to/sample3_R1.fq.gz  path/to/sample3_R2.fq.gz
+pool_4  column  path/to/sample4_R1.fq.gz  path/to/sample4_R2.fq.gz
 ```
-The ```decodetable.tsv``` should map (user assigned) individual id's in the matrix to the corresponding row and column id's of each pool; one entry for each element in the matrix.
+The optional ```decodetable.tsv``` should map (user assigned) individual id's in the matrix to the corresponding row and column id's of each pool; one entry for each element in the matrix.
 ```Bash
-individual1  pool_row_1  pool_column_1
+individual1  pool_1  pool_3
+individual2  pool_2  pool_3
+individual3  pool_1  pool_4
+individual4  pool_2  pool_4
 ```
 ### 6. Pipeline output
 The workflow will output a results folder containing multiple config dependent output files:
@@ -63,9 +68,11 @@ The workflow will output a results folder containing multiple config dependent o
 results
 ├── pinpointables.vcf           # Merged VCF file containing all assigned variants
 ├── cram/                       # CRAM files for each pool
+├── context/                    # TSV and JSON files with matrix information and pool-individual linkage.
 ├── logs/                       # Log files for each process
 ├── variants/                   # VCF files for each pool
 ├── variant_tables/             # TSV files converted from pool VCFs
+├── variant_compilation/        # TSV files with aggregated variants, annotations and rescue probabilities
 └── pinpoint_variants/
     ├── all_pins/               # All pinpointables for each sample in individual vcfs (*note)
     ├── unique_pins/            # All unique pinpointables for each sample in individual vcfs (*note)
@@ -74,6 +81,34 @@ results
     └── lookup.tsv              # Variant to sample lookup table
 ```
 A central files is the ```pinpointables.vcf```. This file contains all individually assigned variants. Since each variant contains information from two pools, these a presented as the sample columns: ROW and COLUMN.
+
+## Variant annotation
+Two annotations workflows are currently available. SnpEff for VCF output files and VEP for tabular compiled output. They can be applied by adding the following configurations and absolute paths to the JSON params file.
+```Bash
+config.json
+{
+    # Annotate output VCFs with SnpEff and clinvar
+    annotate: true
+    snpeff_db: "GRCh38.99"
+    snpeff_config: "snpEff.config"
+    snpeff_cache: "cache/"
+    clinvar_db: "clinvar_20230903.vcf.gz" # (*.tbi in same folder)
+    
+    # Annotate tabular output with VEP
+    annotate_vep: true
+    vep_cache: "cache/" # (Current version 111.x)
+    # Optional VEP input:
+    danmac_db: "danmac.vcf.gz" # (*.tbi in same folder)
+    blacklist_bed: "hg38-blacklist.v2.sorted.bed.gz" # (*.tbi in same folder)
+    repeatmasker_bed: "repeatmasker.sorted.bed.gz" # (*.tbi in same folder)
+    gnomad_vcf: "gnomad.vcf.bgz" # (*.tbi in same folder)
+    utr_file: "uORF_5UTR_GRCh38_PUBLIC.txt"
+    alphamissense_tsv: "AlphaMissense_hg38.tsv.gz"
+    loftee_gerp_bw: "gerp_conservation_scores.homo_sapiens.GRCh38.bw"
+    loftee_human_ancestor: "human_ancestor.fa.gz"
+    loftee_sqlite: "loftee.sql"
+}
+```
 
 # Workflow repository contents:
 
@@ -95,6 +130,7 @@ DoBSeqWF
 │   │       ├── pooltable.tsv
 │   │       ├── snvlist.tsv
 │   │       └── target_calling.bed
+│   ├── filter/                           # Filter model modules and parameters
 │   └── helper_scripts
 │       └── simulator.py                  # Script for simulating minimal pipeline data
 ├── bin                                   # Executable pipeline scripts
@@ -106,11 +142,12 @@ DoBSeqWF
 ├── envs
 │   └── <name>/
 │       └── environment.yaml              # Conda environment definitions
+├── lib/                                  # Pipeline groovy utility functions
 ├── main.nf                               # Main workflow
 ├── modules/
 │   └── <module>.nf                       # Module scripts
 ├── subworkflows/
-│   └── <subworkflow>.nf                  # Module scripts
+│   └── <subworkflow>.nf                  # Subworkflow scripts
 ├── next.pbs                              # Helper script for running on NGC-HPC
 └── nextflow.config                       # Workflow parameters
 ```
@@ -180,8 +217,8 @@ predisposed
     ├── <batch_id_I>/
     │   ├── DoBSeqWF/                       # Clone repository here
     │   │   ├── config.json                 # Configuration file
-    │   │   ├── pooltable.tsv               # Pool table (create with helper script)
-    │   │   └── decodetable.tsv             # Decode table (we need a convention for this)
+    │   │   ├── pooltable.tsv               # Pool table
+    │   │   └── decodetable.tsv             # Decode table
     │   └── results
     │       ├── cram/                       # CRAM files for each pool
     │       ├── logs/                       # Log files for each process
