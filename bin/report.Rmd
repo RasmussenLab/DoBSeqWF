@@ -75,7 +75,8 @@ rescue <-
 
 pinvars <- 
   pinvars %>% 
-  full_join(rescue, by=c('uvarid','row_id','column_id','varid','row_label','column_label','sample_alias')) 
+  full_join(rescue, by=c('uvarid','row_id','column_id','row_label','column_label','varid','sample_alias')) %>% 
+  mutate(is_pool_pin = if_else(is.na(is_pool_pin),0,is_pool_pin))
 ```
 
 ```{r eval=have(params$annotations)}
@@ -83,7 +84,18 @@ pinvars <-
 annotations <- 
   read_tsv(annotations_path,
            na = '-', col_types = cols(.default = col_character())) %>% 
-  type_convert(guess_integer = TRUE)
+  type_convert(guess_integer = TRUE) %>% 
+  mutate(is_lof = if_else(LoF == 'HC',1,0)) %>% 
+  mutate(clinvar_stars = case_when(
+    str_detect(ClinVar_CLNREVSTAT, "practice_guideline") ~ 4,
+    str_detect(ClinVar_CLNREVSTAT, "reviewed_by_expert_panel") ~ 3,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_multiple_submitters,_no_conflicts") ~ 2,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_conflicting_interpretations") ~ 1,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_single_submitter") ~ 1,
+    TRUE ~ NA_real_
+  )) %>% 
+  mutate(is_p = if_else(str_detect(ClinVar_CLNSIG, 'Pathogenic') | str_detect(ClinVar_CLNSIG, "Likely_pathogenic"), 1,0)) %>% 
+  mutate(is_lofp = if_else(is_lof == 1 | is_p == 1,1,0))
 
 pinvars <- 
   pinvars %>% 
@@ -100,6 +112,7 @@ annotations <-
   read_tsv(annotations_path,
            na = '-', col_types = cols(.default = col_character())) %>% 
   type_convert(guess_integer = TRUE) %>% 
+  mutate(is_lof = if_else(LoF == 'HC',1,0)) %>% 
   mutate(clinvar_stars = case_when(
     str_detect(ClinVar_CLNREVSTAT, "practice_guideline") ~ 4,
     str_detect(ClinVar_CLNREVSTAT, "reviewed_by_expert_panel") ~ 3,
@@ -166,8 +179,10 @@ pinvars <-
 ```{r}
 plot_data <-
   pinvars %>% 
+  filter(is_pool_pin == 1) %>% 
   group_by(sample_id,row_factor, column_factor) %>% 
   summarise(private_variants = n())
+
 plot_data %>% 
   ggplot(aes(x = column_factor, y = row_factor, fill = private_variants)) +
   geom_point(shape = 22, size = 14, color='black') +
@@ -190,8 +205,8 @@ plot_data %>%
 ```{r eval=have(params$annotations)}
 plot_data <-
   pinvars %>% 
-  mutate(row_factor = fct_rev(factor(row_label, levels = 1:2, ordered = TRUE)),
-         column_factor = factor(column_label, levels = LETTERS[1:2], ordered = TRUE)) %>% 
+  filter(is_pool_pin == 1) %>% 
+  filter(is_lofp == 1) %>% 
   group_by(sample_id,row_factor, column_factor) %>% 
   summarise(private_variants = n())
 
@@ -214,11 +229,15 @@ plot_data %>%
   ggtitle('pLoF/p only')
 ```
 
+
+
+
+
 ```{r eval=have(params$annotations) & have(params$rescue)}
 plot_data <-
   pinvars %>% 
-  mutate(row_factor = fct_rev(factor(row_label, levels = 1:2, ordered = TRUE)),
-         column_factor = factor(column_label, levels = LETTERS[1:2], ordered = TRUE)) %>% 
+  filter((probability >= 0.5 & is_single) | is_pool_pin == 1) %>% 
+  filter(is_lofp == 1) %>% 
   group_by(sample_id,row_factor, column_factor) %>% 
   summarise(private_variants = n())
 
