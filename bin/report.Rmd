@@ -60,7 +60,8 @@ output_path <- here::here('reports')
 pinvars <- 
   read_tsv(pinpoints_path,
            col_types = cols(.default = col_character())) %>% 
-  type_convert(guess_integer = TRUE)
+  type_convert(guess_integer = TRUE) %>% 
+  mutate(row_label = as.integer(row_label))
 
 poolvars <- 
   read_tsv(all_variants_path,
@@ -71,6 +72,7 @@ poolvars <-
 ```{r eval=have(params$rescue)}
 rescue <- 
   read_tsv(rescue_path) %>% 
+  mutate(row_label = as.integer(row_label)) %>% 
   select(-sample_id)
 
 pinvars <- 
@@ -104,43 +106,6 @@ pinvars <-
 poolvars <- 
   poolvars %>% 
   left_join(annotations, by='varid')
-```
-
-
-```{r eval=F}
-annotations <- 
-  read_tsv(annotations_path,
-           na = '-', col_types = cols(.default = col_character())) %>% 
-  type_convert(guess_integer = TRUE) %>% 
-  mutate(is_lof = if_else(LoF == 'HC',1,0)) %>% 
-  mutate(clinvar_stars = case_when(
-    str_detect(ClinVar_CLNREVSTAT, "practice_guideline") ~ 4,
-    str_detect(ClinVar_CLNREVSTAT, "reviewed_by_expert_panel") ~ 3,
-    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_multiple_submitters,_no_conflicts") ~ 2,
-    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_conflicting_interpretations") ~ 1,
-    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_single_submitter") ~ 1,
-    TRUE ~ NA_real_
-  )) %>% 
-  mutate(is_p = if_else(str_detect(ClinVar_CLNSIG, 'Pathogenic') | str_detect(ClinVar_CLNSIG, "Likely_pathogenic"), 1,0)) %>% 
-  mutate(is_lofp = if_else(is_lof == 1 | is_p == 1,1,0))
-
-rescue <- 
-  read_tsv(rescue_path) %>% 
-  select(-sample_id)
-
-pinvars <- 
-  read_tsv(pinpoints_path,
-           col_types = cols(.default = col_character())) %>% 
-  type_convert(guess_integer = TRUE) %>% 
-  left_join(rescue, by=c('uvarid','row_id','column_id','varid')) %>% 
-  left_join(annotations, by='varid')
-
-poolvars <- 
-  read_tsv(all_variants_path,
-           col_types = cols(.default = col_character())) %>% 
-  type_convert(guess_integer = TRUE) %>% 
-  left_join(annotations, by='varid')
-
 ```
 
 ```{r}
