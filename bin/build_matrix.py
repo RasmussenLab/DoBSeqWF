@@ -35,9 +35,6 @@ import argparse, csv, hashlib, json, sys, re
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
-def natural_key(s: str):
-    return [int(t) if t.isdigit() else t.lower() for t in re.findall(r"\d+|\D+", s)]
-
 def read_pools(pools_path: Path) -> Tuple[List[str], List[str]]:
     rows, cols = [], []
     with pools_path.open() as fh:
@@ -108,8 +105,8 @@ def build_context(rows: List[str],
                   decode: Dict[Tuple[str,str], str],
                   pad_width: Optional[int]) -> dict:
     # Force deterministic ordering
-    rows_ord = sorted(rows, key=natural_key)
-    cols_ord = sorted(cols, key=natural_key)
+    rows_ord = sorted(rows, key=str.lower)
+    cols_ord = sorted(cols, key=str.lower)
 
     # Indices and labels
     row_index = {pid: i for i, pid in enumerate(rows_ord)}
