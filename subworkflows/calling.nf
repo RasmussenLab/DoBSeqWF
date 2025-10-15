@@ -12,6 +12,7 @@ include { DEEPVARIANT               } from '../modules/deepvariant'
 include { FREEBAYES                 } from '../modules/freebayes'
 include { CRISP                     } from '../modules/crisp'
 include { OCTOPUS                   } from '../modules/octopus'
+include { NGSEP                     } from '../modules/ngsep'
 include { FILTER                    } from '../modules/filter'
 include { GENOMICSDB                } from '../modules/genomicsdb'
 include { GENOTYPEGVCF              } from '../modules/genotypegvcf'
@@ -55,6 +56,10 @@ workflow CALLING {
 
     if (params.freebayes) {
         FREEBAYES(bam_file_w_index, reference_genome, bedfile)
+    }
+
+    if (params.ngsep) {
+        NGSEP(bam_file_w_index, reference_genome, bedfile)
     }
 
     if (params.runHCParallel) {

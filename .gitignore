@@ -184,3 +184,4 @@ vcftable.tsv
 pixi.toml
 pixi.lock
 .DS_Store
+.vscode
