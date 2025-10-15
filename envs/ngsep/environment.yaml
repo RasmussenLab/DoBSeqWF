@@ -1,0 +1,7 @@
+name: ngsep
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::ngsep=4.0.1
