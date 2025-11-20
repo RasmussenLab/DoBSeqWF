@@ -15,11 +15,26 @@ process DROP_PL {
 
     script:
     """
-    bcftools annotate                   \
-        -x "FORMAT/PL"                  \
-        -Ov                             \
-        -o ${sample_id}.${caller}.vcf   \
+    # 1) Drop PL from the VCF
+    bcftools annotate \\
+        -x "FORMAT/PL" \\
+        -Ov \\
+        -o tmp.${sample_id}.${caller}.vcf \\
         ${vcf_file}
+
+    # 2) Extract header and fix misdeclared INFO fields
+    bcftools view -h tmp.${sample_id}.${caller}.vcf | \\
+        sed -E 's/(ID=HAPCOMP),Number=A/\\1,Number=1/' | \\
+        sed -E 's/(ID=HAPDOM),Number=A/\\1,Number=1/' | \\
+        sed -E 's/(ID=X_HIL),Number=A/\\1,Number=1/' | \\
+        sed -E 's/(ID=X_IL),Number=A/\\1,Number=1/' \\
+        > header_fixed.hdr
+
+    # 3) Reheader with the fixed header
+    bcftools reheader \\
+        -h header_fixed.hdr \\
+        tmp.${sample_id}.${caller}.vcf \\
+        > ${sample_id}.${caller}.vcf
     """
 
     stub:
