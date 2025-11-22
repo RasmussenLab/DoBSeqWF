@@ -61,7 +61,8 @@ pinvars <-
   read_tsv(pinpoints_path,
            col_types = cols(.default = col_character())) %>% 
   type_convert(guess_integer = TRUE) %>% 
-  mutate(row_label = as.integer(row_label))
+  mutate(row_label = as.integer(row_label),
+         is_pool_pin = 1)
 
 poolvars <- 
   read_tsv(all_variants_path,
@@ -77,7 +78,7 @@ rescue <-
 
 pinvars <- 
   pinvars %>% 
-  full_join(rescue, by=c('uvarid','row_id','column_id','row_label','column_label','varid','sample_alias')) %>% 
+  full_join(rescue, by=c('uvarid','row_id','column_id','row_label','column_label','varid','sample_alias', 'is_pool_pin')) %>% 
   mutate(is_pool_pin = if_else(is.na(is_pool_pin),0,is_pool_pin))
 ```
 

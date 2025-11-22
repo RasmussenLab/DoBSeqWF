@@ -19,7 +19,7 @@ process GENOTYPEGVCF {
     path "${sample_id}.genotypegvcf.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).getName() + ".fasta"
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".GATK.vcf.gz")
     def avail_mem = (task.memory.mega*0.8).intValue()
     """
