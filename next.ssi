@@ -3,7 +3,7 @@
 # next.ssi
 # 
 # mads
-# 2025-10-20
+# 2024-10-20
 #
 # This is a simple wrapper that that runs the DoBSeq workflow on SSI.
 # The pipeline profile uses environment modules and runs all processes as submitted jobs.
