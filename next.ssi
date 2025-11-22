@@ -11,7 +11,7 @@
 #
 # Usage:
 #
-#    myqsub [-F "optional arguments to Nexflow"] next.pbs
+#    myqsub [-F "optional arguments to Nextflow"] next.pbs
 #
 
 ## exit if any errors or unset variables are encountered
