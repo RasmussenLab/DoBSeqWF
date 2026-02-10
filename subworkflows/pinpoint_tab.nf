@@ -53,6 +53,7 @@ workflow PINPOINT_TAB {
             blacklist_bed_ch,
             repeatmasker_bed_ch,
             gnomad_vcf_ch,
+            params.loftee_path              ?: [],
             params.loftee_gerp_bw           ?: [],
             params.loftee_human_ancestor    ?: [],
             params.loftee_sqlite            ?: []

@@ -17,7 +17,7 @@ process ALIGNMENT {
     path "${sample_id}.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).getName() + ".fasta"
     // int bwa_cpus = Math.max((task.cpus * 0.75) as int, 1)
     // int samtools_cpus = Math.max(task.cpus - bwa_cpus, 1)
 
