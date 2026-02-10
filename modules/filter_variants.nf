@@ -18,7 +18,7 @@ process FILTER_VARIANTS {
 
     script:
     def input_vcfs = vcf_files.join(' ')
-    def filter = filter_indels ? "" : "--indel-threshold 1"
+    def filter = filter_indels ? "" : "--indel-threshold 0.0"
     """
     export PYTHONPATH=\${PYTHONPATH:+\$PYTHONPATH:}\$PWD
     dwf_filter.py                           \
