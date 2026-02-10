@@ -17,7 +17,7 @@ process ALIGNMENT_METRICS {
     path("${sample_id}*.align.txt"), emit: metrics_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.align.txt" : "${sample_id}_${log_suffix}.align.txt"
     """
     gatk CollectAlignmentSummaryMetrics     \

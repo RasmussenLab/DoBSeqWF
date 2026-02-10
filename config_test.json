@@ -5,7 +5,7 @@
     "step": "all",
     "pooltable": "assets/data/test_data/pooltable.tsv",
     "decodetable": "assets/data/test_data/decodetable.tsv",
-    "reference_genome": "assets/data/reference_genomes/small/small_reference",
+    "reference_genome": "assets/data/reference_genomes/small/small_reference.fna",
     "bedfile": "assets/data/test_data/target_calling.bed",
     "bedfile_bam_extraction": "assets/data/test_data/target_calling.bed",
     "dictfile": "assets/data/test_data/target_calling.dict",

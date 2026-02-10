@@ -17,7 +17,7 @@ process GENOTYPEGVCF_SPLIT {
     path "${sample_id}*.genotypegvcf.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def id = interval ? "${sample_id}.${interval}" : sample_id
     def avail_mem = (task.memory.mega*0.8).intValue()
     """

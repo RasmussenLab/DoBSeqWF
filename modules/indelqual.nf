@@ -17,7 +17,7 @@ process INDELQUAL {
     path "${sample_id}.lofreq.iq.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fasta"
+    def db = file(params.reference_genome).name
     """
     lofreq indelqual                                    \
         --dindel                                        \

@@ -11,8 +11,8 @@ process TEST {
     val pinpoint_method
 
     output:
-    path "test.passed" optional true
-    path "test.failed" optional true
+    path "test.passed", optional: true
+    path "test.failed", optional: true
     path "test.log"
 
     script:

@@ -21,7 +21,7 @@ process NORMALISE_VCF {
     path "${sample_id}.${caller}.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fasta"
+    def db = file(params.reference_genome).name
     """
     bcftools norm                           \
         --check-ref e                       \

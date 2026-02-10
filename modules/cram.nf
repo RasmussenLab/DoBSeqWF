@@ -16,7 +16,7 @@ process CRAM {
     path("${sample_id}_cram.tsv"), emit: cram_info
 
     script:
-    def db = file(params.reference_genome).getName() + ".fasta"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/cram/" + sample_id + ".cram")
     """
     samtools view                       \

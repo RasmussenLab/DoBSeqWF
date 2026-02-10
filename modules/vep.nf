@@ -28,7 +28,7 @@ process VEP {
     path "annotations_w_varid.tsv", emit: annotations_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fasta"
+    def db = file(params.reference_genome).name
     def mode = cache_dir ? "--cache --offline --dir_cache ${cache_dir}" : "--database"
     def utr = utr_annotation ? "--plugin UTRAnnotator,file=${utr_annotation}" : ""
     def am = alphamissense ? "--plugin AlphaMissense,file=${alphamissense}" : ""
