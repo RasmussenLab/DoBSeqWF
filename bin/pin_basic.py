@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import json, sys, argparse
 from pathlib import Path
 from dataclasses import dataclass, fields

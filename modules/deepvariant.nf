@@ -22,7 +22,7 @@ process DEEPVARIANT {
     path "${sample_id}.DV.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def ref_dir = file(params.reference_genome).getParent()
     def target_dir = file(params.bedfile).getParent()
     """

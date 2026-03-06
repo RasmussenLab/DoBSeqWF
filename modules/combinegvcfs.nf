@@ -21,7 +21,7 @@ process COMBINEGVCFS {
     path "genomicsdb.log"
 
     script:
-    db = file(params.reference_genome).getName() + ".fna"
+    db = file(params.reference_genome).name
     input_files_command = vcfs.collect(){"--variant ${it}"}.join(' ')
     avail_mem = (task.memory.mega*0.8).intValue()
     """

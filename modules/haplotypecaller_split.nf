@@ -19,7 +19,7 @@ process HAPLOTYPECALLER_SPLIT {
     path "${sample_id}*.g.haplotypecaller.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def id = interval ? "${sample_id}.${interval}" : sample_id
     def add_intervals = interval ? "-L ${interval}" : ""
     def add_intersection = interval ? "--interval-set-rule INTERSECTION" : ""

@@ -13,7 +13,7 @@ process MERGEBAM {
     tuple val(sample_id), path("${sample_id}_raw.bam"), emit: bam_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     gatk MergeBamAlignment              \
         TMP_DIR=.                       \

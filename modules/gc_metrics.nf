@@ -20,7 +20,7 @@ process GC_METRICS {
     path("${sample_id}*.gc.summary.txt"), emit: summary_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.gc.txt" : "${sample_id}_${log_suffix}.gc.txt"
     def log_filename_summary = log_suffix == "" ? "${sample_id}.gc.summary.txt" : "${sample_id}_${log_suffix}.gc.summary.txt"
     """

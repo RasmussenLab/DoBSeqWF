@@ -22,7 +22,7 @@ process CRISP {
 
     script:
     def input_files_command = bam_files.collect(){"--bam ${it}"}.join(' ')
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     CRISP                                               \
         --ref ${db}                                     \
