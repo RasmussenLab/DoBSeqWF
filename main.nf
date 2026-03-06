@@ -79,7 +79,12 @@ report_rmd = Channel.fromPath("$projectDir/bin/report.Rmd", checkIfExists: true)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExists: true).collect()
+ref_file = file(params.reference_genome)
+ref_base = ref_file.parent.resolve(ref_file.baseName)
+reference_genome_ch = Channel
+    .fromPath(["${ref_file}*", "${ref_base}.*"], checkIfExists: true)
+    .unique { it.name }
+    .collect()
 bedfile_ch = Channel.fromPath(params.bedfile, checkIfExists: true).collect()
 
 /*

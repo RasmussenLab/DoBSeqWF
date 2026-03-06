@@ -20,7 +20,7 @@ process LOFREQ {
     path "${sample_id}.lofreq.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".lofreq.vcf.gz")
     """
     lofreq call-parallel                            \

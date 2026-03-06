@@ -18,6 +18,7 @@ process VEP {
     tuple path(blacklist), path(blacklist_index) // optional blacklist BED
     tuple path(repeatmasks), path(repeat_index) // optional repeat masks BED
     tuple path(gnomad), path(gnomad_index) // optional gnomAD VCF
+    path loftee_plugin_path, stageAs: "loftee" // optional LOFTEE github repo path
     path loftee_gerp_bigwig // optional LOFTEE GERP BigWig
     path loftee_human_ancestor // optional LOFTEE human ancestor FASTA
     path loftee_conservation // optional LOFTEE conservation SQL
@@ -27,7 +28,7 @@ process VEP {
     path "annotations_w_varid.tsv", emit: annotations_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def mode = cache_dir ? "--cache --offline --dir_cache ${cache_dir}" : "--database"
     def utr = utr_annotation ? "--plugin UTRAnnotator,file=${utr_annotation}" : ""
     def am = alphamissense ? "--plugin AlphaMissense,file=${alphamissense}" : ""

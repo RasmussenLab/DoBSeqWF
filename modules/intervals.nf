@@ -13,7 +13,7 @@ process INTERVALS {
     path "target_region.interval_list", emit: target_list
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     gatk BedToIntervalList \
 				 I=${bedfile} \

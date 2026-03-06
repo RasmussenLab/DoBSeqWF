@@ -13,7 +13,7 @@ process MERGE_CONSENSUS {
     tuple val(sample_id), path("${sample_id}.bam"), emit: bam_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def avail_mem = (task.memory.mega*0.8).intValue()
     """
     gatk --java-options -Xmx${avail_mem}M MergeBamAlignment              \

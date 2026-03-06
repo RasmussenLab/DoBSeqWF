@@ -20,7 +20,7 @@ process FREEBAYES {
     path "${sample_id}.freebayes.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".freebayes.vcf.gz")
     """
     freebayes                                       \

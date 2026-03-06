@@ -18,7 +18,7 @@ process HS_METRICS {
     path("${sample_id}*.hs.txt"), emit: metrics_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.hs.txt" : "${sample_id}_${log_suffix}.hs.txt"
     """
     gatk BedToIntervalList \
