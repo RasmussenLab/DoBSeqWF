@@ -7,6 +7,7 @@ dependencies:
   - python=3.11
   - pip
   - numpy
+  - scipy>=1.16.1,<2
   - pandas>=2.3.2
   - pysam=0.23.3
   - htslib>=1.18
