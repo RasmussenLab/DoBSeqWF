@@ -16,3 +16,4 @@ pixi.lock linguist-language=YAML linguist-generated=true
 *.Rmd text eol=lf
 *.groovy text eol=lf
 *.json text eol=lf
+*.ssi text eol=lf
