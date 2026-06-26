@@ -5,13 +5,6 @@
 // Use newest nextflow dsl
 nextflow.enable.dsl = 2
 
-log.info """\
-    ===================================
-             D o B S e q - W F
-    ===================================
-    """
-    .stripIndent()
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT MODULES AND SUBWORKFLOWS
@@ -94,6 +87,15 @@ bedfile_ch = Channel.fromPath(params.bedfile, checkIfExists: true).collect()
 */
 
 workflow {
+
+    log.info """\
+    ===================================
+             D o B S e q - W F
+    ===================================
+    """
+    .stripIndent()
+
+
     if (params.step == 'mapping' || params.step == 'all' || params.step == '') {
         if (params.umi) {
             bam_file_w_index_ch = MAPPING_UMI(pooltable_ch, reference_genome_ch, bedfile_ch)
