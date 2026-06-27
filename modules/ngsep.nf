@@ -19,7 +19,7 @@ process NGSEP {
     path "${sample_id}.ngsep.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     ngsep \
         SingleSampleVariantsDetector \
