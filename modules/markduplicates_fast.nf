@@ -4,7 +4,7 @@ process MARKDUPLICATES_FAST {
     // Mark duplicate reads in BAM files
     
     conda "$projectDir/envs/sambamba/environment.yaml"
-    container params.container.sambamba
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.sambamba : params.container.docker.sambamba
 
     publishDir "${params.outputDir}/log/markdup_sambamba/", pattern: "${sample_id}*.log", mode:'copy'
 

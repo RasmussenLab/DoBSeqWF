@@ -3,7 +3,7 @@ process MERGE_CONSENSUS {
     tag "Merge consensus bam files - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*"), path(ubam_file, stageAs: "raw/*")
@@ -13,9 +13,10 @@ process MERGE_CONSENSUS {
     tuple val(sample_id), path("${sample_id}.bam"), emit: bam_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options -Xmx20g MergeBamAlignment              \
+    gatk --java-options -Xmx${avail_mem}M MergeBamAlignment              \
         TMP_DIR=.                       \
         UNMAPPED=${ubam_file}           \
         ALIGNED=${bam_file}             \

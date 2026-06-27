@@ -4,5 +4,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bcftools=1.19
+  - bcftools=1.22
   - python=3.9
+  - samtools=1.20

@@ -4,7 +4,7 @@ process HAPLOTYPECALLER {
     // Call variants using GATK - HaplotypeCaller
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/haplotypecaller/", pattern: "${sample_id}.g.haplotypecaller.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.g.vcf.gz", mode:'copy'
@@ -19,9 +19,10 @@ process HAPLOTYPECALLER {
     path "${sample_id}.g.haplotypecaller.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData" HaplotypeCaller   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" HaplotypeCaller   \
         -R ${db}                                                    \
         -I ${bam_file}                                              \
         -L ${bedfile}                                               \
@@ -42,7 +43,7 @@ process HAPLOTYPECALLER {
         -A AlleleFraction                                           \
         --disable-read-filter NotDuplicateReadFilter                \
         --max-alternate-alleles 3                                   \
-        --max-num-haplotypes-in-population 1000                     \
+        --max-num-haplotypes-in-population ${params.max_haplotypes} \
         --max-reads-per-alignment-start 0                           \
         --create-output-variant-index                               \
         --tmp-dir .                                                 \

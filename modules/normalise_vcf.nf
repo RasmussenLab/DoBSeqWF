@@ -6,7 +6,7 @@ process NORMALISE_VCF {
     // 3. Checks refs against reference genome
 
     conda "$projectDir/envs/bcftools/environment.yaml"
-    container params.container.bcftools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bcftools : params.container.docker.bcftools
 
     publishDir "${params.outputDir}/log/normalise_vcf/${sample_id}/", pattern: "${sample_id}.${caller}.log", mode:'copy'
     publishDir "${params.outputDir}/normalised_variants/", pattern: "${sample_id}.${caller}.vcf", mode:'copy'
@@ -21,7 +21,7 @@ process NORMALISE_VCF {
     path "${sample_id}.${caller}.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     bcftools norm                           \
         --check-ref e                       \

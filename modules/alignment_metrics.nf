@@ -4,7 +4,7 @@ process ALIGNMENT_METRICS {
     // Collect alignment metrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/alignment_metrics/", pattern: "${sample_id}*.align.txt", mode:'copy'
 
@@ -17,7 +17,7 @@ process ALIGNMENT_METRICS {
     path("${sample_id}*.align.txt"), emit: metrics_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.align.txt" : "${sample_id}_${log_suffix}.align.txt"
     """
     gatk CollectAlignmentSummaryMetrics     \

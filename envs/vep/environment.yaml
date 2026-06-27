@@ -1,0 +1,8 @@
+name: vep
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::ensembl-vep=114.2
+  - bioconda::samtools=1.20

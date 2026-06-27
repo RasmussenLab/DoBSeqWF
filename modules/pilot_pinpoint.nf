@@ -1,7 +1,7 @@
 process PILOT_PINPOINT {
     label 'process_low'
     conda "$projectDir/envs/r_env/environment.yaml"
-    container params.container.r_env
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.r_env : params.container.docker.r_env
 
     publishDir "${params.outputDir}/pinned_variants/", pattern: "*.tsv", mode:'copy'
     publishDir "${params.outputDir}/pinned_variants/outlier_plots/", pattern: "*.pdf", mode: 'copy'

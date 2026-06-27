@@ -4,7 +4,7 @@ process LOFREQ {
     // Call variants using Lofreq - call parallel
     
     conda "$projectDir/envs/lofreq/environment.yaml"
-    container params.container.lofreq
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.lofreq : params.container.docker.lofreq
 
     publishDir "${params.outputDir}/log/lofreq/", pattern: "${sample_id}.lofreq.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.lofreq.vcf.gz", mode:'copy'
@@ -20,7 +20,7 @@ process LOFREQ {
     path "${sample_id}.lofreq.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".lofreq.vcf.gz")
     """
     lofreq call-parallel                            \

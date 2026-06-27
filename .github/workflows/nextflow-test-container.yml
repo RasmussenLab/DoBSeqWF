@@ -10,7 +10,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
+    env:
+      NXF_SYNTAX_PARSER: v1
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -28,7 +31,7 @@ jobs:
         key: docker-cache-${{ runner.os }}-${{ hashFiles('**/nextflow.config', '**/modules.config') }}
         restore-keys: |
           docker-cache-${{ runner.os }}-
-      
+
     - name: Install Nextflow
       run: |
         curl -s https://get.nextflow.io | bash

@@ -4,7 +4,7 @@ process DROP_PL {
     // Drop PL tag from VCF file.
 
     conda "$projectDir/envs/bcftools/environment.yaml"
-    container params.container.bcftools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.bcftools : params.container.docker.bcftools
 
     input:
     tuple val(sample_id), path(vcf_file, stageAs: "input/*"), path(index, stageAs: "input/*")

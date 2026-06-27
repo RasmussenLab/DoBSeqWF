@@ -4,7 +4,7 @@ process GENOMICSDB {
     // Merge gVCF files into a single GenomicsDB
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/", pattern: "genomicsdb.log", mode:'copy'
     publishDir "${params.outputDir}/", pattern: "./genomicsdb", mode:'copy'
@@ -19,9 +19,10 @@ process GENOMICSDB {
     path "genomicsdb.log"
 
     script:
+    def avail_mem = (task.memory.mega*0.8).intValue()
     input_files_command = vcfs.collect(){"--variant ${it}"}.join(' ')
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"   \
         GenomicsDBImport                            \
         $input_files_command                        \
         --genomicsdb-workspace-path genomicsdb      \

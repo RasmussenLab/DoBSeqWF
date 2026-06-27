@@ -3,8 +3,8 @@ process GC_METRICS {
     tag "$sample_id"
     // Collect gc bias metrics for bam file
 
-    conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    conda "$projectDir/envs/picard/environment.yaml"
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.picard : params.container.docker.picard
 
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.txt", mode:'copy'
     publishDir "${params.outputDir}/log/gc_bias_metrics/", pattern: "${sample_id}*.gc.summary.txt", mode:'copy'
@@ -20,11 +20,11 @@ process GC_METRICS {
     path("${sample_id}*.gc.summary.txt"), emit: summary_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.gc.txt" : "${sample_id}_${log_suffix}.gc.txt"
     def log_filename_summary = log_suffix == "" ? "${sample_id}.gc.summary.txt" : "${sample_id}_${log_suffix}.gc.summary.txt"
     """
-    gatk CollectGcBiasMetrics     \
+    picard CollectGcBiasMetrics     \
         -I ${bam_file}                      \
         -O ${log_filename}                  \
         -S ${log_filename_summary}         \

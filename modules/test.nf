@@ -1,7 +1,7 @@
 process TEST {
     label 'process_single'
     conda "$projectDir/envs/pinpy/environment.yaml"
-    container params.container.pinpy
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.pinpy : params.container.docker.pinpy
 
     publishDir "${params.outputDir}/test/", pattern: "test.*", mode:'copy'
 
@@ -11,8 +11,8 @@ process TEST {
     val pinpoint_method
 
     output:
-    path "test.passed" optional true
-    path "test.failed" optional true
+    path "test.passed", optional: true
+    path "test.failed", optional: true
     path "test.log"
 
     script:

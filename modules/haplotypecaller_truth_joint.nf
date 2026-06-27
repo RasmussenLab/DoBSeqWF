@@ -4,7 +4,7 @@ process HC_TRUTH_JOINT {
     // Call variants using GATK - HaplotypeCaller
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/haplotypecaller/", pattern: "${sample_id}.g.haplotypecaller.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.g.vcf.gz", mode:'copy'
@@ -20,9 +20,10 @@ process HC_TRUTH_JOINT {
     path "${sample_id}.g.haplotypecaller.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"                   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"                   \
         HaplotypeCaller                                             \
         -R ${db}                                                    \
         -L ${bedfile}                                               \

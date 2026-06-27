@@ -3,7 +3,7 @@ process BQSR {
     tag "Calculate score recalibration - $sample_id"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     input:
     tuple val(sample_id), path(bam_file)
@@ -15,7 +15,7 @@ process BQSR {
     tuple val(sample_id), path(bam_file), path("${sample_id}.BQSR.table"), emit: bqsr_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def mills_db = file(params.mills).getName()
     def g1000_db = file(params.g1000).getName()
     """

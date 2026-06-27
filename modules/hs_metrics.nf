@@ -4,7 +4,7 @@ process HS_METRICS {
     // Collect HSMetrics for bam file
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/hs_metrics/", pattern: "${sample_id}*.hs.txt", mode:'copy'
 
@@ -18,7 +18,7 @@ process HS_METRICS {
     path("${sample_id}*.hs.txt"), emit: metrics_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def log_filename = log_suffix == "" ? "${sample_id}.hs.txt" : "${sample_id}_${log_suffix}.hs.txt"
     """
     gatk BedToIntervalList \

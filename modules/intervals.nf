@@ -3,7 +3,7 @@ process INTERVALS {
     tag "BedFileToIntervalList"
 
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     input:
     path reference_genome
@@ -13,7 +13,7 @@ process INTERVALS {
     path "target_region.interval_list", emit: target_list
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     gatk BedToIntervalList \
 				 I=${bedfile} \

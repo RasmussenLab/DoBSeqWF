@@ -1,0 +1,269 @@
+---
+title: "DoBSeq Report"
+output: html_document
+date: "2025-09-17"
+params:
+  matrix_context: null
+  pinpoints:      null
+  all_variants:   null
+  annotations:    null
+  rescue:         null
+  output:         null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = params$project_root)
+```
+
+```{r}
+library('ggthemes')
+library('jsonlite')
+library("dplyr")
+library("stringr")
+library("ggplot2")
+library("ggbeeswarm")
+library("tidyr")
+library("readr")
+library("tibble")
+library("forcats")
+library("scales")
+```
+
+
+```{r}
+have <- function(p) !is.null(p) && length(p) == 1 && fs::file_exists(p)
+```
+
+
+```{r eval=have(params$pinpoints)}
+matrix_context_path <- params$matrix_context
+pinpoints_path <- params$pinpoints
+all_variants_path <- params$all_variants
+annotations_path <- params$annotations
+rescue_path <- params$rescue
+output_path <- params$output
+```
+
+```{r eval=!have(params$pinpoints)}
+here::i_am("bin/report.Rmd")
+
+matrix_context_path <- here::here('results','context','matrix_context.json')
+pinpoints_path <- here::here('results','variant_compilation','pinpoint_variants.tsv')
+all_variants_path <- here::here('results','variant_compilation','all_pool_variants.tsv')
+annotations_path <- here::here('results','vep_annotate','annotations_w_varid.tsv')
+rescue_path <- here::here('results','rescue_probabilities','predictions.tsv')
+output_path <- here::here('reports')
+```
+
+```{r}
+pinvars <- 
+  read_tsv(pinpoints_path,
+           col_types = cols(.default = col_character())) %>% 
+  type_convert(guess_integer = TRUE) %>% 
+  mutate(row_label = as.integer(row_label),
+         is_pool_pin = 1)
+
+poolvars <- 
+  read_tsv(all_variants_path,
+           col_types = cols(.default = col_character())) %>% 
+  type_convert(guess_integer = TRUE)
+```
+
+```{r eval=have(params$rescue)}
+rescue <- 
+  read_tsv(rescue_path) %>% 
+  mutate(row_label = as.integer(row_label)) %>% 
+  select(-sample_id)
+
+pinvars <- 
+  pinvars %>% 
+  full_join(rescue, by=c('uvarid','row_id','column_id','row_label','column_label','varid','sample_alias', 'is_pool_pin')) %>% 
+  mutate(is_pool_pin = if_else(is.na(is_pool_pin),0,is_pool_pin))
+```
+
+```{r eval=have(params$annotations)}
+
+annotations <- 
+  read_tsv(annotations_path,
+           na = '-', col_types = cols(.default = col_character())) %>% 
+  type_convert(guess_integer = TRUE) %>% 
+  mutate(is_lof = if_else(LoF == 'HC',1,0)) %>% 
+  mutate(clinvar_stars = case_when(
+    str_detect(ClinVar_CLNREVSTAT, "practice_guideline") ~ 4,
+    str_detect(ClinVar_CLNREVSTAT, "reviewed_by_expert_panel") ~ 3,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_multiple_submitters,_no_conflicts") ~ 2,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_conflicting_interpretations") ~ 1,
+    str_detect(ClinVar_CLNREVSTAT, "criteria_provided,_single_submitter") ~ 1,
+    TRUE ~ NA_real_
+  )) %>% 
+  mutate(is_p = if_else(str_detect(ClinVar_CLNSIG, 'Pathogenic') | str_detect(ClinVar_CLNSIG, "Likely_pathogenic"), 1,0)) %>% 
+  mutate(is_lofp = if_else(is_lof == 1 | is_p == 1,1,0))
+
+pinvars <- 
+  pinvars %>% 
+  left_join(annotations, by='varid')
+
+poolvars <- 
+  poolvars %>% 
+  left_join(annotations, by='varid')
+```
+
+```{r}
+matrix_ctx <- fromJSON(matrix_context_path)
+matrix_size <- matrix_ctx$matrix$n_rows
+
+all_sample_ids <- 
+  bind_rows(matrix_ctx$matrix$cells) %>%
+  filter(!is.na(sample_id) & sample_id != "") %>%
+  pull(sample_id) %>%
+  unique()
+
+all_sample_alias <- 
+  bind_rows(matrix_ctx$matrix$cells) %>%
+  filter(!is.na(alias) & alias != "") %>%
+  pull(alias) %>%
+  unique()
+
+all_pool_alias <- 
+  bind_rows(matrix_ctx$matrix$cells) %>%
+  filter(!is.na(sample_id) & sample_id != "") %>%
+  pull(sample_id) %>%
+  unique()
+
+# Create dynamic factor levels
+row_levels <- 1:matrix_size
+col_levels <- LETTERS[1:matrix_size]
+
+pinvars <- 
+  pinvars %>% 
+  mutate(row_factor = fct_rev(factor(row_label, levels = row_levels, ordered = TRUE)),
+         column_factor = factor(column_label, levels = col_levels, ordered = TRUE))
+```
+
+#### Assigned variants per individual
+```{r}
+plot_data <-
+  pinvars %>% 
+  filter(is_pool_pin == 1) %>% 
+  group_by(sample_id,row_factor, column_factor) %>% 
+  summarise(private_variants = n())
+
+plot_data %>% 
+  ggplot(aes(x = column_factor, y = row_factor, fill = private_variants)) +
+  geom_point(shape = 22, size = 14, color='black') +
+  scale_x_discrete(drop = FALSE, position = "top") +
+  scale_y_discrete(drop = FALSE, limits = levels(plot_data$row_factor)) +
+  geom_text(aes(label=private_variants),size=5, color='white') +
+  ggthemes::scale_fill_continuous_tableau() +
+  coord_fixed() +
+  labs(x = "COLUMN POOL", y = "ROW POOL") +
+  theme_minimal() +
+  theme(legend.title = element_blank(),
+        legend.position = '',
+        panel.grid.minor = element_line(size = 2),
+        panel.grid.major = element_line(size = 2),
+        axis.title = element_text(face = 'bold', color = '#7f8c8d', size = 20),
+        axis.text = element_text(face = 'bold', color = '#7f8c8d', size = 15)) +
+  ggtitle('All assigned')
+```
+
+```{r eval=have(params$annotations)}
+plot_data <-
+  pinvars %>% 
+  filter(is_pool_pin == 1) %>% 
+  filter(is_lofp == 1) %>% 
+  group_by(sample_id,row_factor, column_factor) %>% 
+  summarise(private_variants = n())
+
+plot_data %>% 
+  ggplot(aes(x = column_factor, y = row_factor, fill = private_variants)) +
+  geom_point(shape = 22, size = 14, color='black') +
+  scale_x_discrete(drop = FALSE, position = "top") +
+  scale_y_discrete(drop = FALSE, limits = levels(plot_data$row_factor)) +
+  geom_text(aes(label=private_variants),size=5, color='white') +
+  ggthemes::scale_fill_continuous_tableau() +
+  coord_fixed() +
+  labs(x = "COLUMN POOL", y = "ROW POOL") +
+  theme_minimal() +
+  theme(legend.title = element_blank(),
+        legend.position = '',
+        panel.grid.minor = element_line(size = 2),
+        panel.grid.major = element_line(size = 2),
+        axis.title = element_text(face = 'bold', color = '#7f8c8d', size = 20),
+        axis.text = element_text(face = 'bold', color = '#7f8c8d', size = 15))  +
+  ggtitle('pLoF/p only')
+```
+
+
+
+
+
+```{r eval=have(params$annotations) & have(params$rescue)}
+plot_data <-
+  pinvars %>% 
+  filter((probability >= 0.5 & is_single) | is_pool_pin == 1) %>% 
+  filter(is_lofp == 1) %>% 
+  group_by(sample_id,row_factor, column_factor) %>% 
+  summarise(private_variants = n())
+
+plot_data %>% 
+  ggplot(aes(x = column_factor, y = row_factor, fill = private_variants)) +
+  geom_point(shape = 22, size = 14, color='black') +
+  scale_x_discrete(drop = FALSE, position = "top") +
+  scale_y_discrete(drop = FALSE, limits = levels(plot_data$row_factor)) +
+  geom_text(aes(label=private_variants),size=5, color='white') +
+  ggthemes::scale_fill_continuous_tableau() +
+  coord_fixed() +
+  labs(x = "COLUMN POOL", y = "ROW POOL") +
+  theme_minimal() +
+  theme(legend.title = element_blank(),
+        legend.position = '',
+        panel.grid.minor = element_line(size = 2),
+        panel.grid.major = element_line(size = 2),
+        axis.title = element_text(face = 'bold', color = '#7f8c8d', size = 20),
+        axis.text = element_text(face = 'bold', color = '#7f8c8d', size = 15))  +
+  ggtitle('pLoF/p only after rescue')
+```
+
+#### Variant count by pool
+```{r}
+poolvars %>% 
+  group_by(pool_id, dim) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>%
+  mutate(din = if_else(dim == 'column', 1,0)) %>% 
+  ggplot(aes(x=reorder(pool_id,din),y=n,fill=dim)) +
+    geom_col() +
+    coord_flip() +
+    theme_minimal() +
+    xlab('Pool ID') +
+    ylab('Variant count') +
+    ggthemes::scale_fill_tableau() +
+    theme_bw() +
+    theme(axis.text=element_text(size=10),
+          legend.position = 'bottom',
+          legend.title = element_blank())
+```
+
+#### Mean VAF count by individual
+```{r}
+plot_df <- 
+  pinvars %>% 
+  group_by(sample_alias) %>% 
+  mutate(mean_vaf = (column.ALT_AD+row.ALT_AD)/(column.DP+row.DP))
+
+ggplot(plot_df, aes(x = sample_alias, y = mean_vaf)) +
+  ggbeeswarm::geom_beeswarm(corral='wrap',corral.width = 0.9,alpha=0.6) +
+  geom_hline(yintercept = 1/(matrix_size*2), linetype = 'dashed', color='darkgrey') +
+  geom_hline(yintercept = 1/matrix_size, linetype = 'dashed', color='darkgrey') +
+  coord_flip() +
+  theme_minimal() +
+  ggthemes::scale_color_fivethirtyeight() +
+  theme(legend.title = element_blank()) +
+  ylab('Mean VAF') +
+  xlab('Sample ID')
+```
+
+
+

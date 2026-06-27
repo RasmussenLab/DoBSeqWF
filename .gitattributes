@@ -1,2 +1,19 @@
 # SCM syntax highlighting
 pixi.lock linguist-language=YAML linguist-generated=true
+
+# Force windows not to reformat line-endings
+*.sh text eol=lf
+*.bash text eol=lf
+*.py text eol=lf
+*.pl text eol=lf
+*.R text eol=lf
+*.pbs text eol=lf
+*.slurm text eol=lf
+*.config text eol=lf
+*.yaml text eol=lf
+*.nf text eol=lf
+*.md text eol=lf
+*.Rmd text eol=lf
+*.groovy text eol=lf
+*.json text eol=lf
+*.ssi text eol=lf

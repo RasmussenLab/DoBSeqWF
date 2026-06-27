@@ -5,13 +5,6 @@
 // Use newest nextflow dsl
 nextflow.enable.dsl = 2
 
-log.info """\
-    ===================================
-             D o B S e q - W F
-    ===================================
-    """
-    .stripIndent()
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT MODULES AND SUBWORKFLOWS
@@ -30,9 +23,16 @@ include { ANNOTATION                } from './subworkflows/annotation'
 include { BAM                       } from './modules/bam'
 include { INDEX                     } from './modules/index'
 
+// Method for creating decode table and matrix context
+include { MATRIX_CONTEXT            } from './modules/matrix_context'
+
 // Pinpoint methods
 include { PILOT_PINPOINT            } from './modules/pilot_pinpoint'
-include { PINPOINT                  } from './subworkflows/pinpoint'
+include { PINPOINT_VCF              } from './subworkflows/pinpoint_vcf'
+include { PINPOINT_TAB              } from './subworkflows/pinpoint_tab'
+
+include { VARIANT_RESCUE            } from './subworkflows/variant_rescue'
+include { REPORT                    } from './modules/report'
 
 // Test
 include { TEST                      } from './modules/test'
@@ -47,9 +47,9 @@ include { TEST                      } from './modules/test'
 pooltable_ch = Channel
     .fromPath(params.pooltable)
     .splitCsv(sep: '\t')
-    .map { row -> tuple(row[0], [file(row[1]), file(row[2])]) }
+    .map { row -> tuple(row[0], [file(row[2]), file(row[3])]) }
 
-if (params.step == 'calling') {
+if (params.step == 'calling' || (params.step == 'pinpoint' && params.variant_rescue)) {
     cramtable_ch = Channel
         .fromPath(params.cramtable)
         .splitCsv(sep: '\t')
@@ -63,13 +63,21 @@ if (params.step == 'pinpoint') {
         .map { row -> tuple(row[0], file(row[1]), row[2]) }
 }
 
+rescue_probabilities = Channel.value([])
+report_rmd = Channel.fromPath("$projectDir/bin/report.Rmd", checkIfExists: true)
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     REFERENCE FILE CHANNELS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-reference_genome_ch = Channel.fromPath(params.reference_genome + "*", checkIfExists: true).collect()
+ref_file = file(params.reference_genome)
+ref_base = ref_file.parent.resolve(ref_file.baseName)
+reference_genome_ch = Channel
+    .fromPath(["${ref_file}*", "${ref_base}.*"], checkIfExists: true)
+    .unique { it.name }
+    .collect()
 bedfile_ch = Channel.fromPath(params.bedfile, checkIfExists: true).collect()
 
 /*
@@ -79,13 +87,22 @@ bedfile_ch = Channel.fromPath(params.bedfile, checkIfExists: true).collect()
 */
 
 workflow {
+
+    log.info """\
+    ===================================
+             D o B S e q - W F
+    ===================================
+    """
+    .stripIndent()
+
+
     if (params.step == 'mapping' || params.step == 'all' || params.step == '') {
         if (params.umi) {
             bam_file_w_index_ch = MAPPING_UMI(pooltable_ch, reference_genome_ch, bedfile_ch)
         } else {
             bam_file_w_index_ch = MAPPING(pooltable_ch, reference_genome_ch, bedfile_ch)
         }
-    } else if (params.step == 'calling') {
+    } else if (params.step == 'calling' || (params.step == 'pinpoint' && params.variant_rescue)) {
         BAM(cramtable_ch, reference_genome_ch)
         bam_file_w_index_ch = INDEX(BAM.out.bam_file)
     }
@@ -110,16 +127,45 @@ workflow {
     }
 
     if (params.step == 'pinpoint' || params.step == 'all' || params.step == '') {
+        pooltable = file(params.pooltable)
         if (params.pinpoint_method == 'pilot') {
             vcf_ch = gatk_ch
                 .mix(lofreq_ch)
                 .map { pool_id, vcf_file -> vcf_file }
             
-            PILOT_PINPOINT(vcf_ch.collect(), file(params.pooltable), file(params.decodetable))
+            PILOT_PINPOINT(vcf_ch.collect(), pooltable, file(params.decodetable))
             pin_ch = PILOT_PINPOINT.out.pinned_variants
         } else if (params.pinpoint_method == 'new') {
-            PINPOINT(gatk_ch, file(params.decodetable), reference_genome_ch)
-            pin_ch = PINPOINT.out.pinned_variants
+            if (params.decodetable == "") {
+                MATRIX_CONTEXT(pooltable,[])
+                matrix_context = MATRIX_CONTEXT.out.json
+                decode_table = MATRIX_CONTEXT.out.decodetable
+            } else {
+                MATRIX_CONTEXT(pooltable,file(params.decodetable))
+                matrix_context = MATRIX_CONTEXT.out.json
+                decode_table = file(params.decodetable)
+            }
+            PINPOINT_VCF(gatk_ch, pooltable, decode_table, matrix_context, reference_genome_ch)
+            pin_ch = PINPOINT_VCF.out.pinned_variants
+            
+            if (params.pinpoint_tab) {
+                PINPOINT_TAB(gatk_ch, matrix_context, reference_genome_ch)
+
+                if (params.variant_rescue) {
+                    VARIANT_RESCUE(gatk_ch, bam_file_w_index_ch, pooltable, decode_table, reference_genome_ch, bedfile_ch)
+                    rescue_probabilities = VARIANT_RESCUE.out.rescue_probabilities
+                }
+
+                if (params.pinpoint_report) {
+                    REPORT(
+                        report_rmd,
+                        matrix_context,
+                        PINPOINT_TAB.out.pool_variants,
+                        PINPOINT_TAB.out.pinpoint_variants,
+                        PINPOINT_TAB.out.annotations,
+                        rescue_probabilities)
+                }
+            }
         }
     }
 

@@ -3,7 +3,7 @@ process FASTQC {
     tag "FastQC - ${sample_id}"
 
     conda "$projectDir/envs/fastqc/environment.yaml"
-    container params.container.fastqc
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.fastqc : params.container.docker.fastqc
 
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_fastqc.html", mode:'copy'
     publishDir "${params.outputDir}/log/fastqc/", pattern: "${sample_id}_fastqc.zip", mode:'copy'

@@ -3,7 +3,7 @@ process CRAM {
     tag "BAM->CRAM - $sample_id"
     
     conda "$projectDir/envs/samtools/environment.yaml"
-    container params.container.samtools
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.samtools : params.container.docker.samtools
 
     publishDir "${params.outputDir}/cram/", pattern: "${sample_id}.cram", mode:'copy'
 
@@ -16,7 +16,7 @@ process CRAM {
     path("${sample_id}_cram.tsv"), emit: cram_info
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/cram/" + sample_id + ".cram")
     """
     samtools view                       \

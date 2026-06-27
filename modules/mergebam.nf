@@ -3,7 +3,7 @@ process MERGEBAM {
     tag "Merge bam files - $sample_id"
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     input:
     tuple val(sample_id), path(bam_file, stageAs: "raw/*"), path(ubam_file, stageAs: "raw/*")
@@ -13,7 +13,7 @@ process MERGEBAM {
     tuple val(sample_id), path("${sample_id}_raw.bam"), emit: bam_file
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     """
     gatk MergeBamAlignment              \
         TMP_DIR=.                       \

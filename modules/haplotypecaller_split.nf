@@ -4,7 +4,7 @@ process HAPLOTYPECALLER_SPLIT {
     // Call variants using GATK - HaplotypeCaller
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/haplotypecaller/${sample_id}/", pattern: "${sample_id}*.g.haplotypecaller.log", mode:'copy'
     publishDir "${params.outputDir}/variants/gvcf/${sample_id}/", pattern: "${sample_id}*.GATK.g.vcf.gz", mode:'copy'
@@ -19,12 +19,13 @@ process HAPLOTYPECALLER_SPLIT {
     path "${sample_id}*.g.haplotypecaller.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def id = interval ? "${sample_id}.${interval}" : sample_id
     def add_intervals = interval ? "-L ${interval}" : ""
     def add_intersection = interval ? "--interval-set-rule INTERSECTION" : ""
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData" HaplotypeCaller   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" HaplotypeCaller   \
         -R ${db}                                                    \
         -I ${bam_file}                                              \
         -L ${interval_list}                             \

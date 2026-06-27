@@ -11,6 +11,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    env:
+      NXF_SYNTAX_PARSER: v1
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4

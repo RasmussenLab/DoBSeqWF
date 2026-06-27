@@ -4,7 +4,7 @@ process GENOTYPEGVCF {
     // Call variants on multisample gVCF db
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/genotypegvcf/", pattern: "${sample_id}.genotypegvcf.log", mode:'copy'
     publishDir "${params.outputDir}/variants/", pattern: "${sample_id}.GATK.vcf.gz", mode:'copy'
@@ -19,10 +19,11 @@ process GENOTYPEGVCF {
     path "${sample_id}.genotypegvcf.log"
 
     script:
-    def db = file(params.reference_genome).getName() + ".fna"
+    def db = file(params.reference_genome).name
     def publishDir = file(params.outputDir + "/variants/" + sample_id + ".GATK.vcf.gz")
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options "-Xmx8g -XX:-UsePerfData"                   \
+    gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData"                   \
         GenotypeGVCFs                                               \
         -R ${db}                                                    \
         -V ${gvcf_file}                                             \

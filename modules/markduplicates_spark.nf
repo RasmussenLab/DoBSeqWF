@@ -4,7 +4,7 @@ process MARKDUPLICATES_SPARK {
     // Mark duplicate reads in BAM files
     
     conda "$projectDir/envs/gatk4/environment.yaml"
-    container params.container.gatk
+    container workflow.containerEngine == 'singularity' ? params.container.singularity.gatk : params.container.docker.gatk
 
     publishDir "${params.outputDir}/log/markduplicates/", pattern: "${sample_id}*.log", mode:'copy'
 
@@ -20,8 +20,10 @@ process MARKDUPLICATES_SPARK {
     script:
     def log_filename = log_suffix == "" ? "${sample_id}.dupMetric.log" : "${sample_id}_${log_suffix}.dupMetric.log"
     def optical_only = optical_only_tag ? "--duplicate-tagging-policy OpticalOnly" : ""
+    def avail_mem = (task.memory.mega*0.8).intValue()
     """
-    gatk --java-options -Xmx16g MarkDuplicatesSpark  \
+    gatk --java-options -Xmx${avail_mem}M       \
+        MarkDuplicatesSpark  \
         --optical-duplicate-pixel-distance 2500 \
         ${optical_only}                         \
 	    --tmp-dir .                             \

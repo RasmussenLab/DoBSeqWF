@@ -31,7 +31,6 @@ include { HS_METRICS                } from '../modules/hs_metrics'
 include { ALIGNMENT_METRICS         } from '../modules/alignment_metrics'
 include { GC_METRICS                } from '../modules/gc_metrics'
 include { INSERT_SIZE_METRICS       } from '../modules/insert_size_metrics'
-include { DUPLICATE_METRICS         } from '../modules/duplicate_metrics'
 include { INDEX as RAW_INDEX        } from '../modules/index'
 include { FLAGSTAT as RAW_FLAGSTAT  } from '../modules/flagstat'
 include { MOSDEPTH as RAW_DEPTH     } from '../modules/mosdepth'
@@ -137,7 +136,6 @@ workflow MAPPING_UMI {
         ALIGNMENT_METRICS(MERGEBAM.out.bam_file, reference_genome, "")
         GC_METRICS(MERGEBAM.out.bam_file, reference_genome, "")
         INSERT_SIZE_METRICS(MERGEBAM.out.bam_file, "")
-        DUPLICATE_METRICS(MERGEBAM.out.bam_file, "")
         UMI_METRICS(GROUP_UMI.out.grouped_bam_file)
         // After consensus calling (HS metrics)
         CONS_METRIC(ADDREADGROUP.out.bam_file, reference_genome, bedfile, "deduplicated")
@@ -148,7 +146,6 @@ workflow MAPPING_UMI {
             GC_METRICS.out.metrics_file,
             GC_METRICS.out.summary_file,
             INSERT_SIZE_METRICS.out.metrics_file,
-            DUPLICATE_METRICS.out.metrics_file,
             CONS_METRIC.out.metrics_file)
     }
     
